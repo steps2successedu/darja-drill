@@ -22,6 +22,17 @@ Live site: https://steps2successedu.github.io/darja-drill/
 | `config.js` | Supabase URL and publishable key (public by design) |
 | `sw.js`, `manifest.json`, `icon-*.png` | Offline support and home-screen install |
 
+## Number combos
+
+The **Number combos** topic chip (off by default) makes fresh numbers every session, such as 416, 10,212 or 4,321,555, in both Arabizi and Arabic. They're built in `app.js` (section 4b) from the words in the Numbers topic, using the slide pattern:
+
+- parts go biggest first, joined by *w*;
+- below 100 the units come before the tens (*khemsa w tlatin* = 35);
+- 11–19 use their own words;
+- 2 inside "units w tens" is *tnin* (as in 11,542).
+
+For 11–19 thousand it follows the slides: *7dach nalef* on its own, and *Hdach alf w…* inside a longer number (as in 11,542). Forms the slides don't show are skipped. Combos aren't scheduled into boxes, because they're new every time. They still count towards today's reviews, and a miss comes back later in the session.
+
 ## Adding a new week of vocab
 
 In `vocab.js`, add a topic block at the end of `topics`:

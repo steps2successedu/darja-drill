@@ -85,7 +85,23 @@ function roundRobin(list, limit, used, score) {
   }
   return out;
 }
+/* Number combos take a fair share of the session: all of it if they are the only topic picked */
+function comboCount(len) {
+  if (!Combo.on()) return 0;
+  const others = S.set.topics.filter(id => TOPICS.some(t => t.id === id)).length;
+  return others ? Math.max(2, Math.round(len / (others + 1))) : len;
+}
 function buildSession(modes, len, newCap) {
+  const k = comboCount(len);
+  const q = buildRegular(modes, len - k, newCap);
+  for (let i = 0; i < k; i++) {                // spread the combos through the session
+    const c = Combo.make(modes[Math.floor(Math.random() * modes.length)]);
+    q.splice(Math.round((i + .5) * (q.length + 1) / k) % (q.length + 1), 0, {c, repeat: false});
+  }
+  return q;
+}
+function buildRegular(modes, len, newCap) {
+  if (len <= 0) return [];
   const {due, fresh} = plan(modes);
   const used = new Set();                      // one direction of a word per session
   const d = roundRobin(due, len, used, c => {
@@ -104,12 +120,17 @@ function buildSession(modes, len, newCap) {
 }
 function planCounts(modes, len, newCap) {
   const {due, fresh} = plan(modes);
-  const dueN = Math.min(due.length, len);
-  return {dueN, newN: Math.min(newCap, fresh.length, len - dueN), dueAll: due.length, freshAll: fresh.length};
+  const combo = comboCount(len), room = len - combo;
+  const dueN = Math.min(due.length, room);
+  return {dueN, newN: Math.min(newCap, fresh.length, room - dueN), dueAll: due.length, freshAll: fresh.length, combo};
 }
 /* apply a grade; returns true if the card should come back this session */
 function applyGrade(c, g, firstTime) {
   const t = now();
+  if (c.combo) {                               // made fresh each session, so nothing to schedule
+    if (firstTime) { const k = dayKey(); const d = S.days[k] || {n: 0, ok: 0}; d.n++; if (g === 'got') d.ok++; S.days[k] = d; save(); Sync.soon(); }
+    return g === 'miss';
+  }
   const s = S.cards[c.id] || {b: 0, seen: 0, lapses: 0, due: t};
   if (g === 'miss') { s.b = 1; s.lapses++; s.due = t; }
   else if (g === 'almost') { s.b = Math.max(1, s.b); s.due = t + GAPS[s.b] * DAY; }
@@ -123,6 +144,85 @@ function applyGrade(c, g, firstTime) {
   save(); Sync.soon();
   return g === 'miss' || (g === 'almost' && s.b === 1);
 }
+
+/* =========================================================
+   4b. Number combinations (built from the Numbers slides)
+   ========================================================= */
+// Rules taken from the slides: parts go biggest first, joined by "w";
+// below 100 the units come before the tens (khemsa w tlatin = 35); 11–19 have their own words.
+// Every building block comes from the Numbers topic, so fixing a spelling there fixes it here too.
+const Combo = (() => {
+  const COMBO_ID = 'numcombo';
+  const topic = {id: COMBO_ID, name: 'Number combos', week: 0, deck: 'Built from Numbers'};
+  const NUM = {};
+  (TOPICS.find(t => t.id === 'numbers') || {items: []}).items.forEach(([dz, en, ar]) => {
+    if (/^[\d,]+$/.test(en)) NUM[+en.replace(/,/g, '')] = {dz: dz.split(' · ')[0].toLowerCase(), ar};
+  });
+  const ok = [1, 2, 9, 10, 11, 19, 20, 90, 100, 900, 1000, 10000, 11000, 19000, 100000, 900000, 1000000, 9000000].every(n => NUM[n]);
+  const W = {dz: ' w ', ar: ' وْ '};
+  const TNIN = {dz: 'tnin', ar: 'تْنِينْ'};            // 2 inside "units w tens", as in 11,542 (tnin w reb3in)
+  const ALF = {dz: 'alf', ar: 'أَلْفْ'};              // "alf" after a compound, as in 25,363 and 88,888
+  const join = parts => ({dz: parts.map(p => p.dz).join(W.dz), ar: parts.map(p => p.ar).join(W.ar)});
+  const cat = (a, b) => ({dz: a.dz + ' ' + b.dz, ar: a.ar + ' ' + b.ar});
+  function below100(n) {                                   // 1–99
+    if (n <= 19 || n % 10 === 0) return NUM[n];
+    const u = n % 10;
+    return join([u === 2 ? TNIN : NUM[u], NUM[n - u]]);
+  }
+  function below1000(n) {                                  // 1–999
+    const h = n - n % 100, r = n % 100, parts = [];
+    if (h) parts.push(NUM[h]);
+    if (r) parts.push(below100(r));
+    return join(parts);
+  }
+  // how many thousands (1–999); returns {main, alt}
+  function thousands(t, alone) {
+    if (t <= 10 || t % 100 === 0) return {main: NUM[t * 1000]};          // alf, alfyn, teltalaf… mia talef, teltmia talef…
+    if (t <= 19) return {main: alone ? NUM[t * 1000] : cat(NUM[t], ALF)};   // 7dach nalef on its own; Hdach alf w… in a longer number (11,542)
+    return {main: cat(t % 100 === 0 ? NUM[t] : t < 100 ? below100(t) : below1000(t), ALF)};
+  }
+  function say(n) {
+    const m = Math.floor(n / 1e6), t = Math.floor(n / 1e3) % 1000, r = n % 1000;
+    const main = [], alt = [];
+    if (m) { main.push(NUM[m * 1e6]); alt.push(NUM[m * 1e6]); }
+    if (t) { const th = thousands(t, !r); main.push(th.main); alt.push(th.alt || th.main); }
+    if (r) { const x = below1000(r); main.push(x); alt.push(x); }
+    const a = join(main), b = join(alt);
+    a.dz = a.dz.charAt(0).toUpperCase() + a.dz.slice(1);
+    b.dz = b.dz.charAt(0).toUpperCase() + b.dz.slice(1);
+    return {main: a, alt: b.dz !== a.dz ? b.dz : ''};
+  }
+  const rnd = (a, b) => a + Math.floor(Math.random() * (b - a + 1));
+  // thousands counts the slides give a pattern for (skips e.g. 105, where the form isn't shown)
+  const tOk = t => t <= 99 || t % 100 === 0 || t % 100 > 10;
+  function pick() {
+    const r = Math.random();
+    let n;
+    if (r < .14) n = rnd(21, 99);                                        // 45
+    else if (r < .36) n = rnd(101, 999);                                 // 416
+    else if (r < .56) n = rnd(1, 9) * 1000 + rnd(1, 999);                // 7,245
+    else if (r < .76) n = rnd(10, 99) * 1000 + (Math.random() < .15 ? 0 : rnd(1, 999));   // 10,212
+    else if (r < .90) { let t; do t = rnd(100, 999); while (!tOk(t)); n = t * 1000 + (Math.random() < .15 ? 0 : rnd(1, 999)); }
+    else {                                                               // 4,321,555
+      let t; do t = Math.random() < .25 ? 0 : rnd(11, 999); while (!tOk(t));
+      n = rnd(1, 9) * 1e6 + t * 1000 + (Math.random() < .3 ? 0 : rnd(1, 999));
+    }
+    return n;
+  }
+  function make(mode) {
+    let n, tries = 0;
+    do n = pick(); while ((NUM[n] || n % 10 === 0 && n < 100 || n > 100 && n % 100 === 2) && ++tries < 50);  // skip numbers that are already on the slides
+    const s = say(n), en = n.toLocaleString('en-AU');
+    const marked = joinWaw(s.main.ar);
+    const item = {key: `${COMBO_ID}|${en}`, topic, dz: s.main.dz, en, alt: s.alt, ar: marked, arPlain: marked.replace(HARAKAT, ''),
+      x: false, u: false, combo: true};
+    const c = {id: `${item.key}|${mode}|${Math.random().toString(36).slice(2, 7)}`, item, mode, combo: true};
+    CARD[c.id] = c;
+    return c;
+  }
+  return {ID: COMBO_ID, ok, make, say, on: () => ok && S.set.topics.includes(COMBO_ID)};
+})();
+window.__Combo = Combo;
 
 /* =========================================================
    5. Speech
@@ -320,8 +420,9 @@ let D = null;
 function dModes() { return S.set.dir === 'both' ? ['en', 'dz'] : [S.set.dir]; }
 function renderDrillSetup() {
   const p = planCounts(dModes(), S.set.len, S.set.newCap);
-  $('dPlan').innerHTML = `<div><b>${p.dueAll}</b><span>due now</span></div><div><b>${p.freshAll}</b><span>not seen yet</span></div>`;
-  const n = p.dueN + p.newN;
+  $('dPlan').innerHTML = `<div><b>${p.dueAll}</b><span>due now</span></div><div><b>${p.freshAll}</b><span>not seen yet</span></div>` +
+    (p.combo ? `<div><b>${p.combo}</b><span>number combos</span></div>` : '');
+  const n = p.dueN + p.newN + p.combo;
   $('dStart').disabled = n === 0;
   $('dStart').textContent = n ? `Start — ${n} cards` : (p.freshAll ? 'Nothing due. Allow new cards in the options.' : 'All done for now. Come back later.');
 }
@@ -337,14 +438,14 @@ function dCard() {
   $('dDir').textContent = fromDz ? 'Darja → English' : 'English → Darja';
   $('dBar').style.width = (D.i / D.q.length * 100) + '%';
   const s = S.cards[c.id];
-  $('dMeta').innerHTML = `<span class="tag">${esc(it.topic.name)}</span>` + (!s ? '<span class="tag acc">New</span>' : '') +
-    (repeat ? '<span class="tag acc">Again</span>' : '') + (it.x ? '<span class="tag warn">Not from slides</span>' : '');
+  $('dMeta').innerHTML = `<span class="tag">${esc(it.topic.name)}</span>` + (!s && !c.combo ? '<span class="tag acc">New</span>' : '') +
+    (repeat ? '<span class="tag acc">Again</span>' : '') + (it.x ? '<span class="tag warn">Not from slides</span>' : '') + (c.combo ? '<span class="tag">Built from the slide pattern</span>' : '');
   const p = $('dPrompt');
   p.className = 'prompt ' + (fromDz ? '' : 'en');
   p.innerHTML = fromDz ? digits(it.dz) : esc(it.en);
   $('dAnswer').className = 'answer ' + (fromDz ? 'en' : '');
   $('dMain').innerHTML = fromDz ? esc(it.en) : digits(it.dz);
-  $('dAlt').innerHTML = !fromDz && it.alt ? 'Also heard: ' + digits(it.alt) : '';
+  $('dAlt').innerHTML = !fromDz && it.alt ? (c.combo ? 'Or: ' : 'Also heard: ') + digits(it.alt) : '';
   $('dAr').textContent = !fromDz ? (S.set.vowels === 'plain' ? it.arPlain : it.ar) : '';
   $('dSpeak').hidden = !it.ar || !Voice.ok;
   $('dAnswer').hidden = true; $('dHint').hidden = false;
@@ -396,8 +497,9 @@ function dFinish() {
 let L = null;
 function renderListenSetup() {
   const p = planCounts(['ear'], S.set.lLen, S.set.lNewCap);
-  $('lPlan').innerHTML = `<div><b>${p.dueAll}</b><span>due now</span></div><div><b>${p.freshAll}</b><span>not heard yet</span></div>`;
-  const n = p.dueN + p.newN;
+  $('lPlan').innerHTML = `<div><b>${p.dueAll}</b><span>due now</span></div><div><b>${p.freshAll}</b><span>not heard yet</span></div>` +
+    (p.combo ? `<div><b>${p.combo}</b><span>number combos</span></div>` : '');
+  const n = p.dueN + p.newN + p.combo;
   $('lStart').disabled = n === 0;
   $('lStart').textContent = n ? `Start — ${n} words` : (p.freshAll ? 'Nothing due. Allow new cards in the options.' : 'All done for now. Come back later.');
 }
@@ -443,7 +545,7 @@ function lCheck(e) {
   $('lDz').innerHTML = digits(it.dz);
   $('lAr').textContent = S.set.vowels === 'plain' ? it.arPlain : it.ar;
   $('lEn').textContent = it.en;
-  $('lTags').innerHTML = (it.u ? '<span class="tag warn">Arabic spelling unchecked</span>' : '') + (it.x ? '<span class="tag warn">Not from slides</span>' : '');
+  $('lTags').innerHTML = (it.u ? '<span class="tag warn">Arabic spelling unchecked</span>' : '') + (it.x ? '<span class="tag warn">Not from slides</span>' : '') + (it.combo ? '<span class="tag">Built from the slide pattern</span>' : '');
   $('lInput').disabled = true; $('lCheck').disabled = true;
   $('lHint').hidden = true; $('lHintBtn').hidden = true;
   $('lResult').hidden = false;
@@ -600,7 +702,7 @@ function renderTopicChips() {
     box.innerHTML = TOPICS.map(t => {
       const n = t.items.filter(i => S.set.additions || !(i[4] || '').includes('x')).length;
       return `<button class="chip" data-t="${t.id}" aria-pressed="${S.set.topics.includes(t.id)}" type="button">${esc(t.name)} <small>${n}</small>${t.week === NEWEST ? '<span class="wk">newest</span>' : ''}</button>`;
-    }).join('');
+    }).join('') + (Combo.ok ? `<button class="chip" data-t="${Combo.ID}" aria-pressed="${S.set.topics.includes(Combo.ID)}" type="button">Number combos <small>mix</small></button>` : '');
   });
 }
 function renderSettings() {
