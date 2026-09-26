@@ -15,7 +15,7 @@
   next number, and paste the new items in. Nothing else needs to change.
 */
 window.VOCAB = {
-updated: '2026-09-25',
+updated: '2026-09-26',
 topics: [
 {id:'questions', name:'Questions', week:1, deck:'Deck 1', items:[
   ['Wech rak?', 'How are you? — to a man', 'وَاشْ رَاكْ؟', 'Ki rak? · Labas?'],
@@ -244,25 +244,6 @@ topics: [
   ['Hdach melyoun', '11,000,000', 'حْدَاشْ مَلْيُونْ'],
   ['3echrin melyoun', '20,000,000', 'عَشْرِينْ مَلْيُونْ'],
   ['Khamsin melyoun', '50,000,000', 'خَمْسِينْ مَلْيُونْ'],
-  ['Khemsa w tlatin', '35', 'خَمْسَة وْ تْلَاتِينْ'],
-  ['Wahed w settin', '61', 'وَاحَدْ وْ سِتِّينْ'],
-  ['Mia w reb3a w tlattin', '134', 'مْيَة وْ رَبْعَة وْ تْلَاتِينْ'],
-  ['Khemsmia w telttash', '513', 'خَمْسْمْيَة وْ تْلَطَّاشْ', '', 'u'],
-  ['Tes3mia w setta', '906', 'تَسْعْمْيَة وْ سِتَّة', '', 'u'],
-  ['Alf w wahed', '1,001', 'أَلْفْ وْ وَاحَدْ'],
-  ['Seb3alaf w mitin w khemsa w reb3in', '7,245', 'سَبْعْ الَافْ وْ مْيَتِينْ وْ خَمْسَة وْ رَبْعِينْ'],
-  ['Tes3alaf w tes3mia w tes3a w tes3in', '9,999', 'تَسْعْ الَافْ وْ تَسْعْمْيَة وْ تَسْعَة وْ تَسْعِينْ'],
-  ['Hdach alf w khamsmia w tnin w reb3in', '11,542', 'حْدَاشْ أَلْفْ وْ خَمْسْمْيَة وْ تْنِينْ وْ رَبْعِينْ'],
-  ['Khamsa w 3echrin alf w tlatmia w tlata w settin', '25,363', 'خَمْسَة وْ عَشْرِينْ أَلْفْ وْ تَلْتْمْيَة وْ تْلَاتَة وْ سِتِّينْ'],
-  ['Tmenya w tmanin alf w tmenmia w tmenia w tmanin', '88,888', 'تْمَنْيَة وْ تْمَانِينْ أَلْفْ وْ تْمَنْمْيَة وْ تْمَنْيَة وْ تْمَانِينْ'],
-  ['Mia w khemsin alf w settmia w tlata w tlattin', '150,633', 'مْيَة وْ خَمْسِينْ أَلْفْ وْ سَتّْمْيَة وْ تْلَاتَة وْ تْلَاتِينْ'],
-  ['Mitin w khemsin alef', '250,000', 'مْيَتِينْ وْ خَمْسِينْ أَلَفْ'],
-  ['Mitin w seb3a w settin alf w settmia w setta w seb3in', '267,676', 'مْيَتِينْ وْ سَبْعَة وْ سِتِّينْ أَلْفْ وْ سَتّْمْيَة وْ سِتَّة وْ سَبْعِينْ'],
-  ['Reb3emia w seb3in alef w khemsemia w 3echrin', '470,520', 'رَبْعْمْيَة وْ سَبْعِينْ أَلَفْ وْ خَمْسْمْيَة وْ عَشْرِينْ'],
-  ['Zouj mlayen w mitin alf', '2,200,000', 'زُوجْ مْلَايَنْ وْ مْيَتِينْ أَلْفْ'],
-  ['Zouj mlayen w khemsmiat alef', '2,500,000', 'زُوجْ مْلَايَنْ وْ خَمْسْمْيَة تَالَفْ'],
-  ['Reb3 mlayen w teltmia w wa7ed w 3echrin alf w khemsmia w khemsa w khemsin', '4,321,555', 'رْبَعْ مْلَايَنْ وْ تَلْتْمْيَة وْ وَاحَدْ وْ عَشْرِينْ أَلْفْ وْ خَمْسْمْيَة وْ خَمْسَة وْ خَمْسِينْ'],
-  ['Mitin w 3chrin melyoun w khemsemiatalef w mia w reb3in', '220,500,140', 'مْيَتِينْ وْ عَشْرِينْ مَلْيُونْ وْ خَمْسْمْيَة تَالَفْ وْ مْيَة وْ رَبْعِينْ']
 ]}
 ]
 };
