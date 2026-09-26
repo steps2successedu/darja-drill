@@ -1,0 +1,247 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Darja Drill</title>
+<meta name="description" content="Spaced practice for every Darja word from every lesson.">
+<meta name="theme-color" content="#175A43">
+<link rel="manifest" href="manifest.json">
+<link rel="icon" href="icon-192.png">
+<link rel="apple-touch-icon" href="icon-192.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700&family=Atkinson+Hyperlegible:wght@400;700&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div class="wrap">
+  <header class="top">
+    <h1>Darja Drill</h1>
+    <button class="syncdot" id="syncDot" type="button" title="Sync status"><i></i><span id="syncText">Not synced</span></button>
+  </header>
+
+  <nav class="tabs" aria-label="Sections">
+    <button data-tab="drill" aria-current="true" type="button"><svg viewBox="0 0 24 24"><rect x="4" y="5" width="16" height="14" rx="2"/><path d="M8 10h8M8 14h5"/></svg>Drill</button>
+    <button data-tab="listen" aria-current="false" type="button"><svg viewBox="0 0 24 24"><path d="M5 10v4h3l4 4V6L8 10H5z"/><path d="M16 9a4 4 0 0 1 0 6M18.5 6.5a8 8 0 0 1 0 11"/></svg>Listen</button>
+    <button data-tab="progress" aria-current="false" type="button"><svg viewBox="0 0 24 24"><path d="M5 19V11M12 19V5M19 19v-6"/></svg>Progress</button>
+    <button data-tab="settings" aria-current="false" type="button"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M12 3v3M12 18v3M3 12h3M18 12h3M5.6 5.6l2.1 2.1M16.3 16.3l2.1 2.1M5.6 18.4l2.1-2.1M16.3 7.7l2.1-2.1"/></svg>Settings</button>
+  </nav>
+
+  <!-- ================= DRILL ================= -->
+  <section id="tab-drill">
+    <div id="dSetup" class="panel pad stack">
+      <div>
+        <h2>Speak it</h2>
+        <p class="muted">Say the answer out loud, reveal it, and mark yourself. Due cards come first, then new ones.</p>
+      </div>
+      <div class="plan" id="dPlan"></div>
+      <button class="go" id="dStart" type="button">Start</button>
+      <details class="details">
+        <summary>Session options</summary>
+        <div class="stack" style="margin-top:16px">
+          <div><p class="label">Direction</p>
+            <div class="seg" data-setting="dir">
+              <button data-v="both" type="button">Both</button><button data-v="en" type="button">English → Darja</button><button data-v="dz" type="button">Darja → English</button>
+            </div></div>
+          <div><p class="label">Cards per session</p>
+            <div class="seg" data-setting="len" data-num="1">
+              <button data-v="10" type="button">10</button><button data-v="20" type="button">20</button><button data-v="40" type="button">40</button>
+            </div></div>
+          <div><p class="label">New cards per session, at most</p>
+            <div class="seg" data-setting="newCap" data-num="1">
+              <button data-v="0" type="button">0</button><button data-v="5" type="button">5</button><button data-v="10" type="button">10</button><button data-v="20" type="button">20</button>
+            </div></div>
+          <div><p class="label">Topics</p><div class="chips" data-topics></div></div>
+        </div>
+      </details>
+    </div>
+
+    <div id="dRun" hidden>
+      <div class="drillhead"><span class="count" id="dCount"></span><span id="dDir"></span></div>
+      <div class="bar"><i id="dBar"></i></div>
+      <div class="panel flash">
+        <div class="meta" id="dMeta"></div>
+        <p class="prompt" id="dPrompt"></p>
+        <p class="hint" id="dHint">Say it out loud first.</p>
+        <div class="answer" id="dAnswer" hidden>
+          <div class="main" id="dMain"></div>
+          <div class="alt" id="dAlt"></div>
+          <div class="ar" id="dAr" lang="ar"></div>
+          <button class="speak" id="dSpeak" type="button">▶ Hear it</button>
+        </div>
+        <div class="actions" id="dRevealRow"><button class="reveal" id="dReveal" type="button">Show answer <kbd>space</kbd></button></div>
+        <div class="actions" id="dGradeRow" hidden>
+          <button class="grade g-miss" data-g="miss" type="button">Missed <kbd>1</kbd></button>
+          <button class="grade g-almost" data-g="almost" type="button">Almost <kbd>2</kbd></button>
+          <button class="grade g-got" data-g="got" type="button">Got it <kbd>3</kbd></button>
+        </div>
+      </div>
+      <p style="margin-top:14px"><button class="linkish" id="dEnd" type="button">End session</button></p>
+    </div>
+
+    <div id="dDone" class="panel pad stack" hidden></div>
+  </section>
+
+  <!-- ================= LISTEN ================= -->
+  <section id="tab-listen" hidden>
+    <div id="lSetup" class="panel pad stack">
+      <div>
+        <h2>Hear it, type it</h2>
+        <p class="muted">A machine voice reads the Darja from Arabic script. Type what it means in English. It's close to Darja, not perfect, so trust your lessons if it sounds off.</p>
+      </div>
+      <div class="plan" id="lPlan"></div>
+      <button class="go" id="lStart" type="button">Start</button>
+      <p class="muted small" id="lVoiceWarn" hidden></p>
+      <details class="details">
+        <summary>Session options</summary>
+        <div class="stack" style="margin-top:16px">
+          <div><p class="label">Cards per session</p>
+            <div class="seg" data-setting="lLen" data-num="1">
+              <button data-v="10" type="button">10</button><button data-v="20" type="button">20</button><button data-v="40" type="button">40</button>
+            </div></div>
+          <div><p class="label">New cards per session, at most</p>
+            <div class="seg" data-setting="lNewCap" data-num="1">
+              <button data-v="0" type="button">0</button><button data-v="5" type="button">5</button><button data-v="10" type="button">10</button><button data-v="20" type="button">20</button>
+            </div></div>
+          <div><p class="label">Topics</p><div class="chips" data-topics></div></div>
+        </div>
+      </details>
+    </div>
+
+    <div id="lRun" hidden>
+      <div class="drillhead"><span class="count" id="lCount"></span><span id="lTopic"></span></div>
+      <div class="bar"><i id="lBar"></i></div>
+      <div class="panel flash">
+        <div class="row">
+          <button class="reveal" id="lPlay" type="button">▶ Play <kbd>P</kbd></button>
+          <button class="ghost" id="lSlow" type="button">Slowly</button>
+          <button class="ghost" id="lHintBtn" type="button">Reveal Arabizi <kbd>H</kbd></button>
+        </div>
+        <span class="status" id="lStatus" role="status"></span>
+        <p class="prompt" id="lHint" hidden style="font-size:24px; margin:0"></p>
+        <form id="lForm" class="row" autocomplete="off">
+          <input id="lInput" type="text" placeholder="Type the English" aria-label="Your translation" style="flex:1 1 220px" autocapitalize="off" autocorrect="off" spellcheck="false">
+          <button class="go" id="lCheck" type="submit">Check</button>
+        </form>
+        <div id="lResult" class="stack" hidden style="gap:12px">
+          <p class="verdict" id="lVerdict"></p>
+          <dl class="kv">
+            <dt>Darja</dt><dd id="lDz" style="font-weight:700; font-size:19px"></dd>
+            <dt>Arabic</dt><dd id="lAr" class="ar" lang="ar"></dd>
+            <dt>English</dt><dd id="lEn"></dd>
+          </dl>
+          <div class="meta" id="lTags"></div>
+          <div class="row">
+            <button class="go" id="lNext" type="button">Next</button>
+            <button class="ghost" id="lOverride" type="button">I was right — count it</button>
+          </div>
+        </div>
+      </div>
+      <p style="margin-top:14px"><button class="linkish" id="lEnd" type="button">End session</button></p>
+    </div>
+
+    <div id="lDone" class="panel pad stack" hidden></div>
+  </section>
+
+  <!-- ================= PROGRESS ================= -->
+  <section id="tab-progress" hidden>
+    <div class="stack">
+      <div class="stats" id="pStats"></div>
+      <div class="panel pad stack">
+        <h3>Last 4 weeks</h3>
+        <div class="days" id="pDays"></div>
+      </div>
+      <div class="panel pad stack">
+        <div class="row" style="justify-content:space-between">
+          <h3>By topic</h3>
+          <div class="seg" id="pMode">
+            <button data-v="speak" aria-pressed="true" type="button">Speaking</button><button data-v="ear" aria-pressed="false" type="button">Listening</button>
+          </div>
+        </div>
+        <div class="legend" id="pLegend"></div>
+        <div class="topicbars" id="pTopics"></div>
+      </div>
+      <div class="panel pad stack">
+        <h3>Your hardest words</h3>
+        <p class="muted small">Missed most often and still in the low boxes.</p>
+        <ul class="list" id="pHard"></ul>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= SETTINGS ================= -->
+  <section id="tab-settings" hidden>
+    <div class="stack">
+      <div class="panel pad stack">
+        <h3>Sync between devices</h3>
+        <div id="sNoKey" class="stack" style="gap:12px">
+          <p class="muted">Make a sync code on this device, then enter it on your other device. Both will share the same progress.</p>
+          <div class="row"><button class="go" id="sMake" type="button">Make a sync code</button></div>
+          <form class="row" id="sJoinForm" autocomplete="off">
+            <input type="text" id="sJoinInput" placeholder="Or paste a code from another device" style="flex:1 1 240px" autocapitalize="characters" spellcheck="false">
+            <button class="ghost" type="submit">Join</button>
+          </form>
+        </div>
+        <div id="sHasKey" class="stack" hidden style="gap:12px">
+          <p class="muted">This device syncs with the code below. Keep it private: anyone with it can see and change your progress.</p>
+          <div class="codebox" id="sCode"></div>
+          <div class="row">
+            <button class="ghost" id="sCopyLink" type="button">Copy link for another device</button>
+            <button class="ghost" id="sSyncNow" type="button">Sync now</button>
+            <button class="ghost danger" id="sForget" type="button">Stop syncing here</button>
+          </div>
+          <p class="muted small" id="sLast"></p>
+        </div>
+        <div id="sJoinConfirm" class="note" hidden></div>
+      </div>
+
+      <div class="panel pad stack">
+        <h3>Look and sound</h3>
+        <div><p class="label">Theme</p>
+          <div class="seg" data-setting="theme">
+            <button data-v="auto" type="button">Auto</button><button data-v="light" type="button">Light</button><button data-v="dark" type="button">Dark</button>
+          </div></div>
+        <div><p class="label">Voice</p><select id="sVoice"></select><p class="muted small" id="sVoiceNote" style="margin-top:8px"></p></div>
+        <div><p class="label">Arabic sent to the voice</p>
+          <div class="seg" data-setting="vowels">
+            <button data-v="marked" type="button">With vowel marks</button><button data-v="plain" type="button">Plain</button>
+          </div>
+          <p class="muted small" style="margin-top:8px">Doubled letters are always marked, so words like <i>3emi</i> read as "my uncle" either way.</p></div>
+        <div><p class="label">Voice speed</p>
+          <div class="seg" data-setting="rate" data-num="1">
+            <button data-v="0.7" type="button">Slow</button><button data-v="0.85" type="button">Normal</button><button data-v="1" type="button">Fast</button>
+          </div></div>
+      </div>
+
+      <div class="panel pad stack">
+        <h3>What gets tested</h3>
+        <label class="toggle"><input type="checkbox" id="sAdditions"> <span>Include items that aren't from the slides (Claude's additions, such as <i>houwa</i> / <i>hiya</i>)</span></label>
+        <details class="details">
+          <summary>Arabic spellings to check with your teacher</summary>
+          <p class="muted small" style="margin:10px 0">These were converted from Arabizi and might not match how she writes or says them.</p>
+          <ul class="list" id="sUnsure"></ul>
+        </details>
+      </div>
+
+      <div class="panel pad stack">
+        <h3>Backup</h3>
+        <p class="muted">Save a copy of all your progress as a file, or load one back.</p>
+        <div class="row">
+          <button class="ghost" id="sExport" type="button">Save backup file</button>
+          <label class="ghost" style="display:inline-block">Load backup<input type="file" id="sImport" accept="application/json,.json" hidden></label>
+        </div>
+        <div id="sResetZone"><button class="ghost danger" id="sReset" type="button">Reset all progress</button></div>
+        <p class="muted small" id="sInfo"></p>
+      </div>
+    </div>
+  </section>
+</div>
+
+<script src="vocab.js"></script>
+<script src="config.js"></script>
+<script src="app.js"></script>
+</body>
+</html>
