@@ -165,3 +165,4 @@ select{font-size:15.5px; padding:10px 12px; width:100%}
 .codebox{font-family:var(--mono); font-size:18px; letter-spacing:.04em; background:var(--sunk); border-radius:10px; padding:12px 14px; overflow-wrap:anywhere; user-select:all}
 .note{background:var(--almost-soft); color:var(--ink-2); border-radius:12px; padding:12px 14px; font-size:15.5px}
 @media (prefers-reduced-motion:reduce){*{transition:none!important}}
+@media (hover:none) and (pointer:coarse){ kbd, #lKeys{display:none} }

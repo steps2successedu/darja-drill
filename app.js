@@ -735,7 +735,24 @@ $('sResetZone').addEventListener('click', e => {
   if (e.target.id === 'sResetYes' || e.target.id === 'sResetNo') z.innerHTML = '<button class="ghost danger" id="sReset" type="button">Reset all progress</button>';
 });
 
+// Listen shortcuts. With Option (Mac) or Alt they work while typing in the answer box;
+// on their own they work anywhere else on the card.
+const IS_MAC = /Mac|iPhone|iPad/.test(navigator.platform || navigator.userAgent);
+const MOD = IS_MAC ? '⌥' : 'Alt+';
+document.querySelectorAll('#lRun kbd[data-k]').forEach(k => { k.textContent = MOD + k.dataset.k; });
+$('lKeys').textContent = `Keys work while you type: ${MOD}P play · ${MOD}S slowly · ${MOD}H Arabizi · Enter to check, then Enter for next · ${MOD}R if you were right.`;
+function listenKey(code) {
+  const it = L.q[L.i].c.item;
+  if (code === 'KeyP') { Voice.speak(it, false, $('lStatus')); return true; }
+  if (code === 'KeyS') { Voice.speak(it, true, $('lStatus')); return true; }
+  if (code === 'KeyH') { if (!L.answered) lHint(); return true; }
+  if (code === 'KeyR') { if (L.answered && !$('lOverride').hidden) $('lOverride').click(); return true; }
+  return false;
+}
 document.addEventListener('keydown', e => {
+  if (tab === 'listen' && L && !$('lRun').hidden && e.altKey && !e.ctrlKey && !e.metaKey && !e.repeat) {
+    if (listenKey(e.code)) { e.preventDefault(); return; }
+  }
   if (e.target.closest('input, select, textarea')) {
     if (tab === 'listen' && L && L.answered && e.key === 'Enter') { e.preventDefault(); lNext(); }
     return;
@@ -747,8 +764,7 @@ document.addEventListener('keydown', e => {
     if (e.key === '3') dGrade('got');
   }
   if (tab === 'listen' && L && !$('lRun').hidden) {
-    if (e.key === 'p' || e.key === 'P') Voice.speak(L.q[L.i].c.item, false, $('lStatus'));
-    if ((e.key === 'h' || e.key === 'H') && !L.answered) lHint();
+    if (!e.altKey && !e.ctrlKey && !e.metaKey && !e.repeat && /^Key[PSHR]$/.test(e.code)) { e.preventDefault(); listenKey(e.code); }
   }
 });
 $('syncDot').onclick = () => showTab('settings');

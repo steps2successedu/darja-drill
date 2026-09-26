@@ -116,16 +116,17 @@
       <div class="bar"><i id="lBar"></i></div>
       <div class="panel flash">
         <div class="row">
-          <button class="reveal" id="lPlay" type="button">▶ Play <kbd>P</kbd></button>
-          <button class="ghost" id="lSlow" type="button">Slowly</button>
-          <button class="ghost" id="lHintBtn" type="button">Reveal Arabizi <kbd>H</kbd></button>
+          <button class="reveal" id="lPlay" type="button">▶ Play <kbd data-k="P">P</kbd></button>
+          <button class="ghost" id="lSlow" type="button">Slowly <kbd data-k="S">S</kbd></button>
+          <button class="ghost" id="lHintBtn" type="button">Reveal Arabizi <kbd data-k="H">H</kbd></button>
         </div>
         <span class="status" id="lStatus" role="status"></span>
         <p class="prompt" id="lHint" hidden style="font-size:24px; margin:0"></p>
         <form id="lForm" class="row" autocomplete="off">
           <input id="lInput" type="text" placeholder="Type the English" aria-label="Your translation" style="flex:1 1 220px" autocapitalize="off" autocorrect="off" spellcheck="false">
-          <button class="go" id="lCheck" type="submit">Check</button>
+          <button class="go" id="lCheck" type="submit">Check <kbd>enter</kbd></button>
         </form>
+        <p class="hint" id="lKeys"></p>
         <div id="lResult" class="stack" hidden style="gap:12px">
           <p class="verdict" id="lVerdict"></p>
           <dl class="kv">
@@ -135,8 +136,8 @@
           </dl>
           <div class="meta" id="lTags"></div>
           <div class="row">
-            <button class="go" id="lNext" type="button">Next</button>
-            <button class="ghost" id="lOverride" type="button">I was right — count it</button>
+            <button class="go" id="lNext" type="button">Next <kbd>enter</kbd></button>
+            <button class="ghost" id="lOverride" type="button">I was right — count it <kbd data-k="R">R</kbd></button>
           </div>
         </div>
       </div>
