@@ -28,7 +28,7 @@ const CARD = Object.fromEntries(CARDS.map(c => [c.id, c]));
    ========================================================= */
 const KEY = 'darja-drill-v1';
 const DEFAULTS = {dir: 'both', len: 20, newCap: 10, lLen: 20, lNewCap: 10, topics: TOPICS.map(t => t.id),
-  additions: false, theme: 'auto', vowels: 'marked', rate: 0.85, voice: ''};
+  mLen: 20, additions: false, theme: 'auto', vowels: 'marked', rate: 0.85, voice: ''};
 function loadState() {
   let s = null;
   try { s = JSON.parse(localStorage.getItem(KEY)); } catch (e) {}
@@ -223,6 +223,7 @@ const Combo = (() => {
   return {ID: COMBO_ID, ok, make, say, on: () => ok && S.set.topics.includes(COMBO_ID)};
 })();
 window.__Combo = Combo;
+window.__match = () => M;
 
 /* =========================================================
    5. Speech
@@ -461,9 +462,9 @@ function dGrade(g) {
   if (!D || $('dGradeRow').hidden) return;
   const e = D.q[D.i], c = e.c, first = !(c.id in D.first);
   if (first) D.first[c.id] = g;
-  if (applyGrade(c, g, first) && (D.again[c.id] || 0) < 3) {
+  if (applyGrade(c, g, first) && (D.again[c.id] || 0) < 2) {
     D.again[c.id] = (D.again[c.id] || 0) + 1;
-    D.q.splice(Math.min(D.i + 1 + (g === 'miss' ? 4 : 6), D.q.length), 0, {c, repeat: true});
+    D.q.splice(Math.min(D.i + 1 + (g === 'miss' ? 7 : 11), D.q.length), 0, {c, repeat: true});
   }
   D.i++; dCard();
 }
@@ -558,9 +559,9 @@ function lNext() {
   if (g === 'got' && L.hinted) g = 'almost';           // a hinted answer counts as almost
   const first = !(c.id in L.first);
   if (first) L.first[c.id] = g;
-  if (applyGrade(c, g, first) && (L.again[c.id] || 0) < 3) {
+  if (applyGrade(c, g, first) && (L.again[c.id] || 0) < 2) {
     L.again[c.id] = (L.again[c.id] || 0) + 1;
-    L.q.splice(Math.min(L.i + 1 + (g === 'miss' ? 4 : 6), L.q.length), 0, {c, repeat: true});
+    L.q.splice(Math.min(L.i + 1 + (g === 'miss' ? 7 : 11), L.q.length), 0, {c, repeat: true});
   }
   L.i++; lCard();
 }
@@ -571,6 +572,173 @@ function lFinish() {
   $('lDone').innerHTML = doneHTML(L.first, weak, 'lAgain');
   const again = $('lAgain');
   if (again) again.onclick = () => lStart(shuffle(weak.map(id => ({c: CARD[id], repeat: true}))));
+  Sync.now();
+}
+
+/* =========================================================
+   8b. Match (one prompt, eight options, timed)
+   ---------------------------------------------------------
+   The clock starts when the prompt appears, so the time is thinking time for that word.
+   - First tap wrong: "missed". The word comes back later this session and is brought
+     forward in Drill/Listen.
+   - Right but slow (well over your usual time for that kind of question): "slow". It comes
+     back sooner here and is made due in Drill/Listen, keeping its box.
+   - Right and quick: "clean". Picking from options is recognition, weaker evidence than
+     recall, so it never pushes Drill/Listen back. It only lets the word show up less often
+     here, once it has been clean on two different days.
+   Your usual time is the median of your recent clean answers, kept separately for
+   words, numbers and combos, and for each direction.
+   ========================================================= */
+const NUM_TOPICS = ['numbers', Combo.ID];
+let M = null;
+S.match = S.match || {};
+S.rt = S.rt || {};
+function matchPool() {
+  const st = S.set, words = [], nums = [];
+  ITEMS.forEach(it => {
+    if (!st.topics.includes(it.topic.id) || (!st.additions && it.x)) return;
+    (NUM_TOPICS.includes(it.topic.id) ? nums : words).push(it);
+  });
+  return {words, nums, combos: Combo.on()};
+}
+function matchScore(it) {
+  const m = S.match[it.key], cards = ['en', 'dz'].map(md => S.cards[it.key + '|' + md]).filter(Boolean);
+  let s = Math.random() * 6;
+  if (!m) s += 20;
+  else { if (m.flag) s += 100; if (m.solid >= 2) s -= 40; s += Math.min(10, (Date.now() - (m.t || 0)) / DAY); }
+  cards.forEach(c => { if (c.b <= 2) s += 8; s += c.lapses * 2; });
+  return s;
+}
+const digitsOf = it => it.en.replace(/,/g, '').length;
+function comboLike(it) {                                        // a fresh combo with the same number of digits
+  for (let i = 0; i < 60; i++) { const c = Combo.make('en').item; if (digitsOf(c) === digitsOf(it)) return c; }
+  return Combo.make('en').item;
+}
+function distractors(it, pool) {
+  const out = [], en = new Set([it.en.toLowerCase()]), dz = new Set([it.dz.toLowerCase()]);
+  const add = x => { const e = x.en.toLowerCase(), d = x.dz.toLowerCase(); if (en.has(e) || dz.has(d)) return false; en.add(e); dz.add(d); out.push(x); return true; };
+  if (it.combo) { for (let i = 0; i < 40 && out.length < 7; i++) add(comboLike(it)); }
+  else if (NUM_TOPICS.includes(it.topic.id)) {                // numbers: similar size, so the length isn't a clue
+    const near = shuffle(pool.filter(x => x !== it)).sort((a, b) => Math.abs(digitsOf(a) - digitsOf(it)) - Math.abs(digitsOf(b) - digitsOf(it)));
+    near.slice(0, 5).forEach(add);
+    if (Combo.on()) for (let i = 0; i < 20 && out.length < 7; i++) add(comboLike(it));
+    near.slice(5).forEach(x => out.length < 7 && add(x));
+  }
+  else {
+    const same = shuffle(pool.filter(x => x.topic.id === it.topic.id && x !== it));
+    const other = shuffle(pool.filter(x => x.topic.id !== it.topic.id));
+    same.slice(0, 4).forEach(add);                            // near neighbours make it a real test
+    [...other, ...same.slice(4)].forEach(x => out.length < 7 && add(x));
+  }
+  return out;
+}
+function buildMatch(n) {
+  const p = matchPool(), items = [...p.words, ...p.nums];
+  const nTopics = S.set.topics.filter(id => TOPICS.some(t => t.id === id)).length;
+  const nC = p.combos ? (nTopics ? Math.max(2, Math.round(n / (nTopics + 1))) : n) : 0;
+  const q = items.map(it => [matchScore(it), it]).sort((a, b) => b[0] - a[0]).slice(0, n - nC).map(([, it]) => it);
+  for (let i = 0; i < nC; i++) q.splice(Math.floor(Math.random() * (q.length + 1)), 0, Combo.make('en').item);
+  return shuffle(q).map(it => ({it, repeat: false}));
+}
+function renderMatchSetup() {
+  const p = matchPool();
+  const flagged = [...p.words, ...p.nums].filter(it => S.match[it.key] && S.match[it.key].flag).length;
+  $('mPlan').innerHTML = `<div><b>${p.words.length + p.nums.length}${p.combos ? '+' : ''}</b><span>in play${p.combos ? ' + combos' : ''}</span></div><div><b>${flagged}</b><span>to revisit</span></div>`;
+  const ok = p.words.length >= 8 || p.nums.length >= 8 || p.combos;
+  $('mStart').disabled = !ok;
+  $('mStart').textContent = ok ? `Start — ${S.set.mLen} questions` : 'Pick some topics in the options.';
+}
+function mStart(queue) {
+  M = {q: queue, i: 0, first: {}, again: {}, pool: matchPool()};
+  $('mSetup').hidden = true; $('mDone').hidden = true; $('mRun').hidden = false;
+  mCard();
+}
+const famOf = it => it.combo ? 'combo' : NUM_TOPICS.includes(it.topic.id) ? 'num' : 'word';
+function mCard() {
+  if (M.i >= M.q.length) return mFinish();
+  const {it, repeat} = M.q[M.i], fam = famOf(it);
+  const pool = fam === 'word' ? M.pool.words : M.pool.nums;
+  const opts = shuffle([it, ...distractors(it, pool)]);
+  const dir = Math.random() < .5 ? 'en' : 'dz';                  // en: English prompt, pick the Darja
+  Object.assign(M, {it, dir, fam, opts, tapped: false, done: false});
+  $('mCount').textContent = `${M.i + 1} / ${M.q.length}`;
+  $('mDir').textContent = dir === 'en' ? 'English → Darja' : 'Darja → English';
+  $('mBar').style.width = (M.i / M.q.length * 100) + '%';
+  $('mMeta').innerHTML = `<span class="tag">${esc(it.topic.name)}</span>` + (repeat ? '<span class="tag acc">Again</span>' : '');
+  const p = $('mPrompt');
+  p.className = 'prompt ' + (dir === 'en' ? 'en' : '');
+  p.innerHTML = dir === 'en' ? esc(it.en) : digits(it.dz);
+  $('mGrid').innerHTML = opts.map((o, i) => `<button class="tile ${dir === 'en' ? 'dz' : 'en'}" data-i="${i}" type="button"><kbd>${i + 1}</kbd><span>${dir === 'en' ? digits(o.dz) : esc(o.en)}</span></button>`).join('');
+  requestAnimationFrame(() => { M.t0 = performance.now(); });     // start once it is on screen
+}
+function rtKey() { return M.fam + '|' + M.dir; }
+function usualTime() {
+  const xs = (S.rt[rtKey()] || []).slice().sort((a, b) => a - b);
+  if (xs.length < 5) return {en: 4000, dz: 4000}[M.dir] * (M.fam === 'combo' ? 2 : 1);   // until it has your times
+  return xs[Math.floor(xs.length / 2)];
+}
+function mPick(i) {
+  if (!M || M.done || i >= M.opts.length) return;
+  const tile = $('mGrid').children[i], o = M.opts[i];
+  if (tile.classList.contains('bad')) return;
+  const first = !M.tapped; M.tapped = true;
+  if (o !== M.it) {
+    tile.classList.add('bad');
+    if (first) M.g = 'miss';
+    return;
+  }
+  const rt = performance.now() - M.t0;
+  tile.classList.add('good'); M.done = true;
+  if (first) {
+    const usual = usualTime();
+    M.g = rt > Math.max(1.8 * usual, usual + 2500) ? 'almost' : 'got';
+    const arr = S.rt[rtKey()] = S.rt[rtKey()] || [];
+    arr.push(Math.round(rt)); if (arr.length > 40) arr.shift();
+  }
+  const e = M.q[M.i], key = e.it.key, firstTime = !(key in M.first);
+  if (firstTime) M.first[key] = {g: M.g, it: e.it, rt};
+  mApply(e.it, M.g, firstTime);
+  if (M.g !== 'got' && (M.again[key] || 0) < 2) {
+    M.again[key] = (M.again[key] || 0) + 1;
+    M.q.splice(Math.min(M.i + 1 + (M.g === 'miss' ? 7 : 11), M.q.length), 0, {it: e.it, repeat: true});
+  }
+  setTimeout(() => { M.i++; mCard(); }, M.g === 'got' ? 350 : 1100);   // a moment to see the right answer
+}
+function mApply(it, g, firstTime) {
+  const t = Date.now(), today = dayKey();
+  if (firstTime) { const d = S.days[today] || {n: 0, ok: 0}; d.n++; if (g === 'got') d.ok++; S.days[today] = d; }
+  if (!it.combo) {
+    const m = S.match[it.key] || {solid: 0, seen: 0};
+    m.seen++;
+    if (g === 'got') { if (m.day !== today) m.solid++; if (m.solid >= 2) m.flag = false; }
+    else { m.solid = 0; m.flag = true; }
+    m.day = today; m.t = t; m.last = g;
+    S.match[it.key] = m;
+    if (g !== 'got') ['en', 'dz', 'ear'].forEach(md => {        // mistakes reach Drill/Listen; clean answers don't
+      const c = S.cards[it.key + '|' + md]; if (!c) return;
+      if (g === 'miss') c.b = Math.max(1, c.b - 1);
+      c.due = Math.min(c.due, t); c.t = t;
+    });
+  }
+  save(); Sync.soon();
+}
+function mFinish() {
+  const f = Object.values(M.first), c = g => f.filter(x => x.g === g).length;
+  const weak = f.filter(x => x.g !== 'got').sort((a, b) => (b.g === 'miss') - (a.g === 'miss'));
+  const med = f.filter(x => x.g === 'got').map(x => x.rt).sort((a, b) => a - b);
+  $('mRun').hidden = true; $('mDone').hidden = false;
+  $('mDone').innerHTML = `<h2>Session done</h2>
+    <p class="muted">${med.length ? `Typical clean answer: ${(med[Math.floor(med.length / 2)] / 1000).toFixed(1)} s. ` : ''}Counted on first attempt only.</p>
+    <div class="tally">
+      <div class="t-got"><b>${c('got')}</b><span>clean</span></div>
+      <div class="t-almost"><b>${c('almost')}</b><span>slow</span></div>
+      <div class="t-miss"><b>${c('miss')}</b><span>missed</span></div>
+    </div>
+    ${weak.length ? `<p class="label" style="margin:0">Coming back sooner</p><ul class="list">${weak.map(x =>
+      `<li><span class="d">${digits(x.it.dz)}</span><span class="e">${esc(x.it.en)} · ${x.g === 'miss' ? 'missed' : 'slow'}</span></li>`).join('')}</ul>` : '<p class="muted">Clean sweep.</p>'}
+    <div class="row">${weak.length ? '<button class="go" id="mAgain" type="button">Go over these again</button>' : ''}<button class="ghost" data-back type="button">Back</button></div>`;
+  const again = $('mAgain');
+  if (again) again.onclick = () => mStart(shuffle(weak.map(x => ({it: x.it, repeat: true}))));
   Sync.now();
 }
 
@@ -655,6 +823,13 @@ const Sync = (() => {
       const ld = S.days[k] || {n: 0, ok: 0};
       S.days[k] = {n: Math.max(ld.n, rd.n || 0), ok: Math.max(ld.ok, rd.ok || 0)};
     });
+    Object.entries(remote.match || {}).forEach(([k, rm]) => {
+      const lm = S.match[k];
+      if (!lm || (rm.t || 0) > (lm.t || 0)) S.match[k] = rm;
+    });
+    Object.entries(remote.rt || {}).forEach(([k, xs]) => {     // reaction times: keep the longer history
+      if (Array.isArray(xs) && xs.length > (S.rt[k] || []).length) S.rt[k] = xs;
+    });
   }
   async function run() {
     if (!S.syncKey) { status('', 'Not synced'); return; }
@@ -664,7 +839,7 @@ const Sync = (() => {
     try {
       const remote = await rpc('get_progress', {p_key: S.syncKey});
       merge(remote);
-      await rpc('save_progress', {p_key: S.syncKey, p_data: {v: 1, cards: S.cards, days: S.days}});
+      await rpc('save_progress', {p_key: S.syncKey, p_data: {v: 1, cards: S.cards, days: S.days, match: S.match, rt: S.rt}});
       S.lastSync = Date.now(); save();
       status('ok', 'Synced');
       refreshVisible();
@@ -734,7 +909,7 @@ let tab = 'drill';
 function showTab(t) {
   tab = t;
   document.querySelectorAll('nav.tabs button').forEach(b => b.setAttribute('aria-current', String(b.dataset.tab === t)));
-  ['drill', 'listen', 'progress', 'settings'].forEach(x => $('tab-' + x).hidden = x !== t);
+  ['drill', 'listen', 'match', 'progress', 'settings'].forEach(x => $('tab-' + x).hidden = x !== t);
   if (t !== 'listen') Voice.stop();
   refreshVisible();
   window.scrollTo({top: 0});
@@ -742,13 +917,14 @@ function showTab(t) {
 function refreshVisible() {
   if (tab === 'drill' && !$('dSetup').hidden) renderDrillSetup();
   if (tab === 'listen' && !$('lSetup').hidden) renderListenSetup();
+  if (tab === 'match' && !$('mSetup').hidden) renderMatchSetup();
   if (tab === 'progress') renderProgress();
   if (tab === 'settings') renderSettings();
 }
 function backToSetup() {
-  D = null; L = null; Voice.stop();
-  ['dRun', 'dDone', 'lRun', 'lDone'].forEach(id => $(id).hidden = true);
-  $('dSetup').hidden = false; $('lSetup').hidden = false;
+  D = null; L = null; M = null; Voice.stop();
+  ['dRun', 'dDone', 'lRun', 'lDone', 'mRun', 'mDone'].forEach(id => $(id).hidden = true);
+  $('dSetup').hidden = false; $('lSetup').hidden = false; $('mSetup').hidden = false;
   refreshVisible();
 }
 
@@ -785,6 +961,10 @@ $('lForm').addEventListener('submit', lCheck);
 $('lNext').onclick = lNext;
 $('lOverride').onclick = () => { if (L && L.answered) { L.verdict = {v: 'got', msg: 'Counted as right'}; lShowVerdict(); $('lOverride').hidden = true; } };
 $('lEnd').onclick = () => { if (L) { L.q = L.q.slice(0, L.i); lFinish(); } };
+
+$('mStart').onclick = () => { const q = buildMatch(S.set.mLen); if (q.length) mStart(q); };
+$('mGrid').addEventListener('click', e => { const t = e.target.closest('.tile'); if (t) mPick(+t.dataset.i); });
+$('mEnd').onclick = () => { if (M) { M.q = M.q.slice(0, M.i); mFinish(); } };
 
 $('pMode').onclick = e => {
   const b = e.target.closest('button'); if (!b) return;
@@ -865,6 +1045,7 @@ document.addEventListener('keydown', e => {
     if (e.key === '2') dGrade('almost');
     if (e.key === '3') dGrade('got');
   }
+  if (tab === 'match' && M && !$('mRun').hidden && /^[1-8]$/.test(e.key) && !e.altKey && !e.ctrlKey && !e.metaKey) { mPick(+e.key - 1); return; }
   if (tab === 'listen' && L && !$('lRun').hidden) {
     if (!e.altKey && !e.ctrlKey && !e.metaKey && !e.repeat && /^Key[PSHR]$/.test(e.code)) { e.preventDefault(); listenKey(e.code); }
   }

@@ -47,12 +47,12 @@ h1{font-family:var(--display); font-weight:700; font-size:30px; letter-spacing:-
 .syncdot i{width:9px; height:9px; border-radius:50%; background:var(--ink-3); display:inline-block}
 .syncdot.ok i{background:var(--accent)} .syncdot.err i{background:var(--miss)} .syncdot.busy i{background:var(--almost)}
 nav.tabs{position:fixed; left:0; right:0; bottom:0; z-index:40; background:var(--card); border-top:1px solid var(--line);
-  display:grid; grid-template-columns:repeat(4,1fr); padding-bottom:env(safe-area-inset-bottom,0px)}
+  display:grid; grid-template-columns:repeat(5,1fr); padding-bottom:env(safe-area-inset-bottom,0px)}
 nav.tabs button{font:inherit; font-size:14.5px; font-weight:700; color:var(--ink-3); background:none; border:0; padding:12px 4px 13px; cursor:pointer; display:flex; flex-direction:column; align-items:center; gap:3px}
 nav.tabs button svg{width:22px; height:22px; stroke:currentColor; fill:none; stroke-width:1.8}
 nav.tabs button[aria-current="true"]{color:var(--accent)}
 @media (min-width:820px){
-  nav.tabs{position:static; display:inline-grid; grid-template-columns:repeat(4,auto); gap:2px; border:0; background:var(--sunk); border-radius:12px; padding:3px; margin-bottom:18px}
+  nav.tabs{position:static; display:inline-grid; grid-template-columns:repeat(5,auto); gap:2px; border:0; background:var(--sunk); border-radius:12px; padding:3px; margin-bottom:18px}
   nav.tabs button{flex-direction:row; padding:8px 16px; border-radius:9px; font-size:15px}
   nav.tabs button svg{width:18px; height:18px}
   nav.tabs button[aria-current="true"]{background:var(--card); color:var(--ink)}
@@ -165,4 +165,16 @@ select{font-size:15.5px; padding:10px 12px; width:100%}
 .codebox{font-family:var(--mono); font-size:18px; letter-spacing:.04em; background:var(--sunk); border-radius:10px; padding:12px 14px; overflow-wrap:anywhere; user-select:all}
 .note{background:var(--almost-soft); color:var(--ink-2); border-radius:12px; padding:12px 14px; font-size:15.5px}
 @media (prefers-reduced-motion:reduce){*{transition:none!important}}
-@media (hover:none) and (pointer:coarse){ kbd, #lKeys{display:none} }
+@media (hover:none) and (pointer:coarse){ kbd, #lKeys, #mKeys{display:none} }
+
+/* match */
+.mgrid{display:grid; grid-template-columns:1fr 1fr; gap:8px}
+.tile{font:inherit; font-size:16px; line-height:1.3; text-align:left; background:var(--paper); color:var(--ink); border:1px solid var(--line); border-radius:12px;
+  padding:11px 12px; min-height:52px; cursor:pointer; overflow-wrap:anywhere; display:flex; gap:8px; align-items:baseline}
+.tile kbd{flex:none}
+.tile.en{font-family:var(--display); font-weight:500}
+.tile.dz{font-weight:700}
+.tile.bad{border-color:var(--miss); background:var(--miss-soft); color:var(--miss); animation:shake .3s; cursor:default}
+.tile.good{border-color:var(--accent); background:var(--accent-soft); color:var(--accent)}
+@keyframes shake{25%{transform:translateX(-4px)}75%{transform:translateX(4px)}}
+@media (max-width:420px){ .tile{font-size:15px; padding:10px} .mgrid{gap:6px} }

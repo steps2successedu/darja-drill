@@ -22,6 +22,20 @@ Live site: https://steps2successedu.github.io/darja-drill/
 | `config.js` | Supabase URL and publishable key (public by design) |
 | `sw.js`, `manifest.json`, `icon-*.png` | Offline support and home-screen install |
 
+## Match
+
+Match shows one prompt, in English or Darja, with eight options in the other language. The clock starts when the prompt appears, so the time you take is thinking time for that word alone.
+
+- Numbers and words never share a question. Number options are similar in size, and word options include neighbours from the same topic.
+- **First tap wrong ("missed"):** the word comes back later in the session. In Drill and Listen it drops a box and becomes due.
+- **Right but slow ("slow"):** slower than 1.8× your usual time and at least 2.5 s over it. It comes back sooner and becomes due in Drill and Listen, keeping its box.
+- **Right and quick ("clean"):** picking from options is recognition, which is weaker evidence than recall, so a clean answer never pushes Drill or Listen back. It only makes the word show up less in Match, once it has been clean on two different days.
+- **Your usual time** is the median of your last 40 clean answers, kept separately for words, numbers and combos and for each direction.
+
+## In-session repeats
+
+In Drill and Listen, a missed card comes back 8 cards later and an "Almost" 12 cards later, each at most twice. Longer gaps between attempts give better long-term recall (Pyc & Rawson, 2009).
+
 ## Number combos
 
 The **Number combos** topic chip (off by default) makes fresh numbers every session, such as 416, 10,212 or 4,321,555, in both Arabizi and Arabic. They're built in `app.js` (section 4b) from the words in the Numbers topic, using the slide pattern:

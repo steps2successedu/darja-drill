@@ -26,6 +26,7 @@
   <nav class="tabs" aria-label="Sections">
     <button data-tab="drill" aria-current="true" type="button"><svg viewBox="0 0 24 24"><rect x="4" y="5" width="16" height="14" rx="2"/><path d="M8 10h8M8 14h5"/></svg>Drill</button>
     <button data-tab="listen" aria-current="false" type="button"><svg viewBox="0 0 24 24"><path d="M5 10v4h3l4 4V6L8 10H5z"/><path d="M16 9a4 4 0 0 1 0 6M18.5 6.5a8 8 0 0 1 0 11"/></svg>Listen</button>
+    <button data-tab="match" aria-current="false" type="button"><svg viewBox="0 0 24 24"><rect x="3.5" y="5" width="7" height="5" rx="1.5"/><rect x="13.5" y="14" width="7" height="5" rx="1.5"/><path d="M10.5 7.5h2a2 2 0 0 1 2 2v4.5"/></svg>Match</button>
     <button data-tab="progress" aria-current="false" type="button"><svg viewBox="0 0 24 24"><path d="M5 19V11M12 19V5M19 19v-6"/></svg>Progress</button>
     <button data-tab="settings" aria-current="false" type="button"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M12 3v3M12 18v3M3 12h3M18 12h3M5.6 5.6l2.1 2.1M16.3 16.3l2.1 2.1M5.6 18.4l2.1-2.1M16.3 7.7l2.1-2.1"/></svg>Settings</button>
   </nav>
@@ -145,6 +146,42 @@
     </div>
 
     <div id="lDone" class="panel pad stack" hidden></div>
+  </section>
+
+  <!-- ================= MATCH ================= -->
+  <section id="tab-match" hidden>
+    <div id="mSetup" class="panel pad stack">
+      <div>
+        <h2>Pick the match</h2>
+        <p class="muted">One word or number, eight options. It times how long you take to find the right one, and uses that to decide what comes back sooner.</p>
+      </div>
+      <div class="plan" id="mPlan"></div>
+      <button class="go" id="mStart" type="button">Start</button>
+      <details class="details">
+        <summary>Session options</summary>
+        <div class="stack" style="margin-top:16px">
+          <div><p class="label">Questions per session</p>
+            <div class="seg" data-setting="mLen" data-num="1">
+              <button data-v="10" type="button">10</button><button data-v="20" type="button">20</button><button data-v="40" type="button">40</button>
+            </div></div>
+          <div><p class="label">Topics</p><div class="chips" data-topics></div></div>
+        </div>
+      </details>
+    </div>
+
+    <div id="mRun" hidden>
+      <div class="drillhead"><span class="count" id="mCount"></span><span id="mDir"></span></div>
+      <div class="bar"><i id="mBar"></i></div>
+      <div class="panel flash" style="gap:14px">
+        <div class="meta" id="mMeta"></div>
+        <p class="prompt" id="mPrompt"></p>
+        <div class="mgrid" id="mGrid"></div>
+        <p class="hint" id="mKeys">Keys 1–8 pick an option.</p>
+      </div>
+      <p style="margin-top:14px"><button class="linkish" id="mEnd" type="button">End session</button></p>
+    </div>
+
+    <div id="mDone" class="panel pad stack" hidden></div>
   </section>
 
   <!-- ================= PROGRESS ================= -->
