@@ -29,7 +29,8 @@ Match shows one prompt, in English or Darja, with eight options in the other lan
 - Numbers and words never share a question. Number options are similar in size, and word options include neighbours from the same topic.
 - **First tap wrong ("missed"):** the word comes back later in the session. In Drill and Listen it drops a box and becomes due.
 - **Right but slow ("slow"):** slower than 1.8× your usual time and at least 2.5 s over it. It comes back sooner and becomes due in Drill and Listen, keeping its box.
-- **Right and quick ("clean"):** picking from options is recognition, which is weaker evidence than recall, so a clean answer never pushes Drill or Listen back. It only makes the word show up less in Match, once it has been clean on two different days.
+- **Right and quick ("clean"):** picking from options is recognition, which is weaker evidence than recall, so a clean answer never pushes Drill or Listen back.
+- **Passed:** a word is passed once you've picked it cleanly in **both directions** (English → Darja and Darja → English), with those clean answers on **different days**. Each question asks the direction you still need. A word never comes up both ways in one session. A miss or slow answer wipes that direction's evidence. Passed words come up less often, but still come up.
 - **Your usual time** is the median of your last 40 clean answers, kept separately for words, numbers and combos and for each direction.
 
 ## In-session repeats
@@ -58,6 +59,7 @@ In `vocab.js`, add a topic block at the end of `topics`:
 ]}
 ```
 
+- **Words, phrases and sentence stems only** ("asmou [name]", "I work in [place]"). No full sentences or worked examples: "we'll see each other on Wednesday" and "next year I'll go travelling" stay in the Notebook.
 - `week` must be one higher than the current highest. The newest week's new cards are introduced first.
 - Each item is `[darja, english, arabic, alt, flags]`.
   - In the English, ` — ` or ` · ` separates accepted answers. `— to a man` / `— to a woman` shows who the question is addressed to.

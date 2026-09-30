@@ -15,29 +15,27 @@
   next number, and paste the new items in. Nothing else needs to change.
 */
 window.VOCAB = {
-updated: '2026-09-26',
+updated: '2026-09-30',
 topics: [
 {id:'questions', name:'Questions', week:1, deck:'Deck 1', items:[
   ['Wech rak?', 'How are you? — to a man', 'وَاشْ رَاكْ؟', 'Ki rak? · Labas?'],
   ['Wech raki?', 'How are you? — to a woman', 'وَاشْ رَاكِي؟', 'Ki raki? · Labas?'],
-  ['Labas, hamdoulleh — w nta?', 'Fine, thank God, and you? — to a man', 'لَابَاسْ، الْحَمْدُ لِلَّه، وْ نْتَا؟'],
-  ['Labas, hamdoulleh — w nti?', 'Fine, thank God, and you? — to a woman', 'لَابَاسْ، الْحَمْدُ لِلَّه، وْ نْتِي؟'],
+  ['W nta?', 'And you? — to a man', 'وَنْتَا؟'],
+  ['W nti?', 'And you? — to a woman', 'وَنْتِي؟'],
   ['Wech asmek? · Wesmek?', "What's your name?", 'وَاشْ اسْمَكْ؟', 'Ki ysemmouk?'],
-  ['Asmi Ahmed', 'My name is Ahmed', 'اسْمِي أَحْمَدْ'],
   ['Men win nta?', 'Where are you from? — to a man', 'مِنْ وِينْ نْتَا؟', 'Mnin nta?'],
   ['Men win nti?', 'Where are you from? — to a woman', 'مِنْ وِينْ نْتِي؟', 'Mnin nti?'],
-  ['Ana men Alger', 'I am from Algiers', 'أَنَا مِنْ الدْزَايَرْ', '', 'u'],
+  ['Ana men [place]', 'I am from [place]', 'أَنَا مِنْ'],
   ['Ch7al fi 3omrek?', 'How old are you?', 'شْحَالْ فِي عُمْرَكْ؟'],
-  ['3andi 30 sna · Fi 3omri 30', 'I am 30 years old', 'عَنْدِي تْلَاتِينْ سْنَة'],
+  ['3andi [n] sna · Fi 3omri [n]', 'I am [n] years old', 'فِي عُمْرِي'],
   ['Win teskoun?', 'Where do you live? — to a man', 'وِينْ تَسْكُنْ؟'],
   ['Win teskni?', 'Where do you live? — to a woman', 'وِينْ تَسْكْنِي؟'],
-  ['Ana neskoun fi Alger', 'I live in Algiers', 'أَنَا نَسْكُنْ فِي الدْزَايَرْ', '', 'u'],
+  ['Ana neskoun fi [place]', 'I live in [place]', 'أَنَا نَسْكُنْ فِي'],
   ['Wech tekhdem?', 'What do you do for work? — to a man', 'وَاشْ تَخْدَمْ؟'],
   ['Wech tekhdemi?', 'What do you do for work? — to a woman', 'وَاشْ تَخْدْمِي؟'],
   ['Ana nakhdem fi [field]', 'I work in [field]', 'أَنَا نَخْدَمْ فِي'],
   ['Wach t7eb dir?', 'What do you like to do? — to a man', 'وَاشْ تْحَبّْ دِيرْ؟'],
-  ['Wach t7ebbi diri?', 'What do you like to do? — to a woman', 'وَاشْ تْحَبِّي دِيرِي؟'],
-  ['N7eb ndir sport w ne9ra lektouba', 'I like doing sport and reading books', 'نْحَبّْ نْدِيرْ السْبُورْ وْ نَقْرَا لَكْتُوبَة', '', 'u']
+  ['Wach t7ebbi diri?', 'What do you like to do? — to a woman', 'وَاشْ تْحَبِّي دِيرِي؟']
 ]},
 {id:'endings', name:'Endings & verbs', week:1, deck:'Deck 1', items:[
   ['asmi', 'my name', 'اسْمِي'],
@@ -148,15 +146,7 @@ topics: [
   ['Chhar ljay', 'next month', 'الشّْهَرْ الْجَايْ'],
   ['Chhar li fat', 'last month', 'الشّْهَرْ اللِّي فَاتْ'],
   ['L3am ljay', 'next year', 'الْعَامْ الْجَايْ'],
-  ['L3am li fat', 'last year', 'الْعَامْ اللِّي فَاتْ'],
-  ['Ghedwa Ljam3a', 'tomorrow is Friday', 'غُدْوَة الْجَمْعَة'],
-  ['Lbare7 sebt', 'yesterday was Saturday', 'الْبَارَحْ السَّبْتْ'],
-  ['Ghir ghedwa l7ad', 'the day after tomorrow is Sunday', 'غِيرْ غُدْوَة لْحَدْ'],
-  ['Loul bare7 kouna lkhmis', 'the day before yesterday was Thursday', 'لُولْ الْبَارَحْ كُنَّا لَخْمِيسْ'],
-  ['Netla9aw nhar lerb3a', 'we will see each other on Wednesday', 'نْتْلَاقَاوْ نْهَارْ لَارْبْعَة'],
-  ['Samana li fatet kount m3a mama', 'last week I was with my mum', 'السّْمَانَة اللِّي فَاتَتْ كُنْتْ مْعَا مَامَا'],
-  ['L3otla ray7a tkoun chhar ljay', 'the holiday will be next month', 'الْعُطْلَة رَايْحَة تْكُونْ الشّْهَرْ الْجَايْ'],
-  ['L3am ljay nro7 nsafer', 'next year I will go travelling', 'الْعَامْ الْجَايْ نْرُوحْ نْسَافَرْ']
+  ['L3am li fat', 'last year', 'الْعَامْ اللِّي فَاتْ']
 ]},
 {id:'numbers', name:'Numbers', week:4, deck:'Numbers 1–2', items:[
   ['Sifr', '0', 'صِفْرْ'],

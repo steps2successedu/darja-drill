@@ -396,7 +396,7 @@ const Mark = (() => {
       const n = words.length;
       const h = words.filter(w => inTok.some(t => hit(t, w))).length;
       let v = 'miss';
-      if (n === 0) v = inTok.length ? 'got' : 'miss';
+      if (n === 0) v = (aPers.size ? [...aPers].some(q => inPers.has(q)) : inTok.length) ? 'got' : 'miss';   // e.g. "And you?"
       else if (n <= 2) v = h === n ? 'got' : h >= 1 && n === 2 ? 'almost' : 'miss';
       else v = h / n >= (n >= 5 ? .6 : .66) ? 'got' : h >= 1 && h / n >= .25 ? 'almost' : 'miss';
       // who it's about: "his name" typed for "your name"
@@ -601,11 +601,27 @@ function matchPool() {
   });
   return {words, nums, combos: Combo.on()};
 }
+// A word is "passed" in Match once you've picked it cleanly in BOTH directions
+// (English → Darja and Darja → English), with those clean answers on different days.
+const cleanDays = (m, dir) => (m && m[dir] && m[dir].days) || [];
+function isPassed(m) {
+  if (!m || m.flag) return false;
+  const a = cleanDays(m, 'en'), b = cleanDays(m, 'dz');
+  return a.some(x => b.some(y => x !== y));
+}
+function nextDir(it) {                                          // the direction you still need, else the staler one
+  if (it.combo) return Math.random() < .5 ? 'en' : 'dz';
+  const m = S.match[it.key], a = cleanDays(m, 'en'), b = cleanDays(m, 'dz');
+  if (!a.length && !b.length) return Math.random() < .5 ? 'en' : 'dz';
+  if (!a.length) return 'en';
+  if (!b.length) return 'dz';
+  return a[a.length - 1] <= b[b.length - 1] ? 'en' : 'dz';
+}
 function matchScore(it) {
   const m = S.match[it.key], cards = ['en', 'dz'].map(md => S.cards[it.key + '|' + md]).filter(Boolean);
   let s = Math.random() * 6;
   if (!m) s += 20;
-  else { if (m.flag) s += 100; if (m.solid >= 2) s -= 40; s += Math.min(10, (Date.now() - (m.t || 0)) / DAY); }
+  else { if (m.flag) s += 100; if (isPassed(m)) s -= 40; else s += 10; s += Math.min(10, (Date.now() - (m.t || 0)) / DAY); }
   cards.forEach(c => { if (c.b <= 2) s += 8; s += c.lapses * 2; });
   return s;
 }
@@ -638,12 +654,14 @@ function buildMatch(n) {
   const nC = p.combos ? (nTopics ? Math.max(2, Math.round(n / (nTopics + 1))) : n) : 0;
   const q = items.map(it => [matchScore(it), it]).sort((a, b) => b[0] - a[0]).slice(0, n - nC).map(([, it]) => it);
   for (let i = 0; i < nC; i++) q.splice(Math.floor(Math.random() * (q.length + 1)), 0, Combo.make('en').item);
-  return shuffle(q).map(it => ({it, repeat: false}));
+  return shuffle(q).map(it => ({it, dir: nextDir(it), repeat: false}));
 }
 function renderMatchSetup() {
   const p = matchPool();
-  const flagged = [...p.words, ...p.nums].filter(it => S.match[it.key] && S.match[it.key].flag).length;
-  $('mPlan').innerHTML = `<div><b>${p.words.length + p.nums.length}${p.combos ? '+' : ''}</b><span>in play${p.combos ? ' + combos' : ''}</span></div><div><b>${flagged}</b><span>to revisit</span></div>`;
+  const all = [...p.words, ...p.nums];
+  const flagged = all.filter(it => S.match[it.key] && S.match[it.key].flag).length;
+  const passed = all.filter(it => isPassed(S.match[it.key])).length;
+  $('mPlan').innerHTML = `<div><b>${all.length}${p.combos ? '+' : ''}</b><span>in play${p.combos ? ' + combos' : ''}</span></div><div><b>${passed}</b><span>passed both ways</span></div><div><b>${flagged}</b><span>to revisit</span></div>`;
   const ok = p.words.length >= 8 || p.nums.length >= 8 || p.combos;
   $('mStart').disabled = !ok;
   $('mStart').textContent = ok ? `Start — ${S.set.mLen} questions` : 'Pick some topics in the options.';
@@ -656,10 +674,9 @@ function mStart(queue) {
 const famOf = it => it.combo ? 'combo' : NUM_TOPICS.includes(it.topic.id) ? 'num' : 'word';
 function mCard() {
   if (M.i >= M.q.length) return mFinish();
-  const {it, repeat} = M.q[M.i], fam = famOf(it);
+  const {it, repeat, dir} = M.q[M.i], fam = famOf(it);
   const pool = fam === 'word' ? M.pool.words : M.pool.nums;
   const opts = shuffle([it, ...distractors(it, pool)]);
-  const dir = Math.random() < .5 ? 'en' : 'dz';                  // en: English prompt, pick the Darja
   Object.assign(M, {it, dir, fam, opts, tapped: false, done: false});
   $('mCount').textContent = `${M.i + 1} / ${M.q.length}`;
   $('mDir').textContent = dir === 'en' ? 'English → Darja' : 'Darja → English';
@@ -696,23 +713,27 @@ function mPick(i) {
     arr.push(Math.round(rt)); if (arr.length > 40) arr.shift();
   }
   const e = M.q[M.i], key = e.it.key, firstTime = !(key in M.first);
-  if (firstTime) M.first[key] = {g: M.g, it: e.it, rt};
-  mApply(e.it, M.g, firstTime);
+  if (firstTime) M.first[key] = {g: M.g, it: e.it, rt, dir: M.dir};
+  mApply(e.it, M.g, firstTime, M.dir);
   if (M.g !== 'got' && (M.again[key] || 0) < 2) {
     M.again[key] = (M.again[key] || 0) + 1;
-    M.q.splice(Math.min(M.i + 1 + (M.g === 'miss' ? 7 : 11), M.q.length), 0, {it: e.it, repeat: true});
+    M.q.splice(Math.min(M.i + 1 + (M.g === 'miss' ? 7 : 11), M.q.length), 0, {it: e.it, dir: M.dir, repeat: true});   // same direction: that's the one you missed
   }
   setTimeout(() => { M.i++; mCard(); }, M.g === 'got' ? 350 : 1100);   // a moment to see the right answer
 }
-function mApply(it, g, firstTime) {
+function mApply(it, g, firstTime, dir) {
   const t = Date.now(), today = dayKey();
   if (firstTime) { const d = S.days[today] || {n: 0, ok: 0}; d.n++; if (g === 'got') d.ok++; S.days[today] = d; }
   if (!it.combo) {
-    const m = S.match[it.key] || {solid: 0, seen: 0};
-    m.seen++;
-    if (g === 'got') { if (m.day !== today) m.solid++; if (m.solid >= 2) m.flag = false; }
-    else { m.solid = 0; m.flag = true; }
-    m.day = today; m.t = t; m.last = g;
+    const m = S.match[it.key] || {seen: 0};
+    m.seen = (m.seen || 0) + 1;
+    const d = m[dir] = m[dir] || {days: []};
+    d.days = d.days || [];
+    if (g === 'got') {
+      if (!d.days.includes(today)) { d.days.push(today); if (d.days.length > 3) d.days.shift(); }
+      m.flag = false;                                           // cleared by a clean answer; passing still needs both ways
+    } else { d.days = []; m.flag = true; }                     // a slip wipes that direction's evidence
+    m.day = today; m.t = t; m.last = g; m.lastDir = dir;
     S.match[it.key] = m;
     if (g !== 'got') ['en', 'dz', 'ear'].forEach(md => {        // mistakes reach Drill/Listen; clean answers don't
       const c = S.cards[it.key + '|' + md]; if (!c) return;
@@ -738,7 +759,7 @@ function mFinish() {
       `<li><span class="d">${digits(x.it.dz)}</span><span class="e">${esc(x.it.en)} · ${x.g === 'miss' ? 'missed' : 'slow'}</span></li>`).join('')}</ul>` : '<p class="muted">Clean sweep.</p>'}
     <div class="row">${weak.length ? '<button class="go" id="mAgain" type="button">Go over these again</button>' : ''}<button class="ghost" data-back type="button">Back</button></div>`;
   const again = $('mAgain');
-  if (again) again.onclick = () => mStart(shuffle(weak.map(x => ({it: x.it, repeat: true}))));
+  if (again) again.onclick = () => mStart(shuffle(weak.map(x => ({it: x.it, dir: x.dir, repeat: true}))));
   Sync.now();
 }
 
