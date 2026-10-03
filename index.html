@@ -27,6 +27,7 @@
     <button data-tab="drill" aria-current="true" type="button"><svg viewBox="0 0 24 24"><rect x="4" y="5" width="16" height="14" rx="2"/><path d="M8 10h8M8 14h5"/></svg>Drill</button>
     <button data-tab="listen" aria-current="false" type="button"><svg viewBox="0 0 24 24"><path d="M5 10v4h3l4 4V6L8 10H5z"/><path d="M16 9a4 4 0 0 1 0 6M18.5 6.5a8 8 0 0 1 0 11"/></svg>Listen</button>
     <button data-tab="match" aria-current="false" type="button"><svg viewBox="0 0 24 24"><rect x="3.5" y="5" width="7" height="5" rx="1.5"/><rect x="13.5" y="14" width="7" height="5" rx="1.5"/><path d="M10.5 7.5h2a2 2 0 0 1 2 2v4.5"/></svg>Match</button>
+    <button data-tab="verbs" aria-current="false" type="button"><svg viewBox="0 0 24 24"><path d="M5 6h9M5 12h14M5 18h7"/><path d="M17 4l3 3-3 3"/></svg>Verbs</button>
     <button data-tab="progress" aria-current="false" type="button"><svg viewBox="0 0 24 24"><path d="M5 19V11M12 19V5M19 19v-6"/></svg>Progress</button>
     <button data-tab="settings" aria-current="false" type="button"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M12 3v3M12 18v3M3 12h3M18 12h3M5.6 5.6l2.1 2.1M16.3 16.3l2.1 2.1M5.6 18.4l2.1-2.1M16.3 7.7l2.1-2.1"/></svg>Settings</button>
   </nav>
@@ -182,6 +183,57 @@
     </div>
 
     <div id="mDone" class="panel pad stack" hidden></div>
+  </section>
+
+  <!-- ================= VERBS ================= -->
+  <section id="tab-verbs" hidden>
+    <div id="vSetup" class="panel pad stack">
+      <div>
+        <h2>Conjugate it</h2>
+        <p class="muted">You get a verb and an English phrase like “you write (masc)”. Write the whole phrase in Darja: pronoun, <i>ra-</i> form and verb — <i>nta rak tekteb</i>. Spelling is marked loosely (vowels, ch/sh, 7/h), but each part must be the right one.</p>
+      </div>
+      <div class="plan" id="vPlan"></div>
+      <button class="go" id="vStart" type="button">Start</button>
+      <details class="details">
+        <summary>Session options</summary>
+        <div class="stack" style="margin-top:16px">
+          <div><p class="label">Persons</p>
+            <div class="seg" data-setting="vPersons">
+              <button data-v="sing" type="button">Singular</button><button data-v="plur" type="button">Plural</button><button data-v="all" type="button">All</button>
+            </div></div>
+          <div><p class="label">Questions per session</p>
+            <div class="seg" data-setting="vLen" data-num="1">
+              <button data-v="10" type="button">10</button><button data-v="20" type="button">20</button><button data-v="40" type="button">40</button>
+            </div></div>
+          <div><p class="label">Verbs</p><div class="chips" id="vVerbs"></div></div>
+        </div>
+      </details>
+    </div>
+
+    <div id="vRun" hidden>
+      <div class="drillhead"><span class="count" id="vCount"></span><span id="vDeck"></span></div>
+      <div class="bar"><i id="vBar"></i></div>
+      <div class="panel flash">
+        <div class="meta" id="vMeta"></div>
+        <p class="prompt" id="vVerb"></p>
+        <p class="vperson" id="vPerson"></p>
+        <form id="vForm" class="row" autocomplete="off">
+          <input id="vInput" type="text" placeholder="pronoun  ra-  verb" aria-label="Your answer" style="flex:1 1 220px" autocapitalize="off" autocorrect="off" spellcheck="false">
+          <button class="go" id="vCheck" type="submit">Check <kbd>enter</kbd></button>
+        </form>
+        <div id="vResult" class="stack" hidden style="gap:12px">
+          <p class="verdict" id="vVerdict"></p>
+          <table class="ptable" id="vTable"></table>
+          <div class="row">
+            <button class="go" id="vNext" type="button">Next <kbd>enter</kbd></button>
+            <button class="ghost" id="vOverride" type="button">I was right — count it</button>
+          </div>
+        </div>
+      </div>
+      <p style="margin-top:14px"><button class="linkish" id="vEnd" type="button">End session</button></p>
+    </div>
+
+    <div id="vDone" class="panel pad stack" hidden></div>
   </section>
 
   <!-- ================= PROGRESS ================= -->

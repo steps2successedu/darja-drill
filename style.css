@@ -47,12 +47,12 @@ h1{font-family:var(--display); font-weight:700; font-size:30px; letter-spacing:-
 .syncdot i{width:9px; height:9px; border-radius:50%; background:var(--ink-3); display:inline-block}
 .syncdot.ok i{background:var(--accent)} .syncdot.err i{background:var(--miss)} .syncdot.busy i{background:var(--almost)}
 nav.tabs{position:fixed; left:0; right:0; bottom:0; z-index:40; background:var(--card); border-top:1px solid var(--line);
-  display:grid; grid-template-columns:repeat(5,1fr); padding-bottom:env(safe-area-inset-bottom,0px)}
+  display:grid; grid-template-columns:repeat(6,1fr); padding-bottom:env(safe-area-inset-bottom,0px)}
 nav.tabs button{font:inherit; font-size:14.5px; font-weight:700; color:var(--ink-3); background:none; border:0; padding:12px 4px 13px; cursor:pointer; display:flex; flex-direction:column; align-items:center; gap:3px}
 nav.tabs button svg{width:22px; height:22px; stroke:currentColor; fill:none; stroke-width:1.8}
 nav.tabs button[aria-current="true"]{color:var(--accent)}
 @media (min-width:820px){
-  nav.tabs{position:static; display:inline-grid; grid-template-columns:repeat(5,auto); gap:2px; border:0; background:var(--sunk); border-radius:12px; padding:3px; margin-bottom:18px}
+  nav.tabs{position:static; display:inline-grid; grid-template-columns:repeat(6,auto); gap:2px; border:0; background:var(--sunk); border-radius:12px; padding:3px; margin-bottom:18px}
   nav.tabs button{flex-direction:row; padding:8px 16px; border-radius:9px; font-size:15px}
   nav.tabs button svg{width:18px; height:18px}
   nav.tabs button[aria-current="true"]{background:var(--card); color:var(--ink)}
@@ -178,3 +178,14 @@ select{font-size:15.5px; padding:10px 12px; width:100%}
 .tile.good{border-color:var(--accent); background:var(--accent-soft); color:var(--accent)}
 @keyframes shake{25%{transform:translateX(-4px)}75%{transform:translateX(4px)}}
 @media (max-width:420px){ .tile{font-size:15px; padding:10px} .mgrid{gap:6px} }
+
+/* verbs */
+.vperson{font-size:20px; margin:0; color:var(--ink-2)}
+.vperson b{color:var(--accent); font-weight:700}
+.ptable{border-collapse:collapse; width:100%; font-size:16px}
+.ptable td{padding:6px 10px; border-bottom:1px solid var(--hair)}
+.ptable td:first-child{color:var(--ink-3); width:42%}
+.ptable td:last-child{font-weight:700}
+.ptable tr.hit td{background:var(--accent-soft)}
+.ptable tr.hit td:last-child{color:var(--accent)}
+@media (max-width:420px){ nav.tabs button{font-size:12.5px; padding-inline:2px} }

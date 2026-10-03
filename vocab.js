@@ -15,7 +15,7 @@
   next number, and paste the new items in. Nothing else needs to change.
 */
 window.VOCAB = {
-updated: '2026-10-03',
+updated: '2026-10-04',
 topics: [
 {id:'questions', name:'Questions', week:1, deck:'Deck 1', items:[
   ['Wech rak?', 'How are you? — to a man', 'وَاشْ رَاكْ؟', 'Ki rak? · Labas?'],
@@ -299,6 +299,62 @@ topics: [
   ['3chr mlayen', '100,000 DA', 'عَشْرْ مْلَايَنْ'],
   ['7dach melyoun', '110,000 DA', 'حْدَاشْ مَلْيُونْ'],
   ['Tnach melyoun', '120,000 DA', 'طْنَاشْ مَلْيُونْ']
+]},
+{id:'pronouns', name:'Pronouns', week:7, deck:'The Pronouns', items:[
+  ['Ana', 'I', 'أَنَا'],
+  ['Nta · Ntaya', 'you (m)', 'نْتَا'],
+  ['Nti · Ntiya', 'you (f)', 'نْتِي'],
+  ['Houwa · Howa', 'he', 'هُوَّ'],
+  ['Hia · Hiya', 'she', 'هِيَّ'],
+  ['7na', 'we', 'حْنَا'],
+  ['Ntouma', 'you (plural)', 'نْتُومَا'],
+  ['Houma', 'they', 'هُومَا'],
+  ['ta3i', 'my · mine', 'تَاعِي', 'dyali'],
+  ['ta3ek', 'your · yours — to one person', 'تَاعَكْ', 'dyalek'],
+  ['ta3ou', 'his', 'تَاعُو', 'dyalou'],
+  ['ta3ha · ta7a', 'her · hers', 'تَاعْهَا', 'dyalha'],
+  ['ta3na', 'our · ours', 'تَاعْنَا', 'dyalna'],
+  ['ta3koum', 'your · yours — to several people', 'تَاعْكُمْ', 'dyalkoum'],
+  ['ta3houm', 'their · theirs', 'تَاعْهُمْ', 'dyalhoum'],
+  ['Hada · Had', 'this (m) · this one (m)', 'هَادَا'],
+  ['Hadak', 'that (m) · that one (m)', 'هَادَاكْ'],
+  ['Hadi', 'this (f) · this one (f)', 'هَادِي'],
+  ['Hadik', 'that (f) · that one (f)', 'هَادِيكْ'],
+  ['Hadou', 'these', 'هَادُو'],
+  ['Hadouk', 'those', 'هَادُوكْ']
+]},
+{id:'present', name:'Present verbs', week:8, deck:'The Present', items:[
+  ['Yekteb', 'to write · he writes', 'يَكْتَبْ'],
+  ['Yekdeb', 'to lie · he lies', 'يَكْذَبْ', '', 'u'],
+  ['Y9ra', 'to read · he reads', 'يَقْرَا'],
+  ['Ymchi', 'to walk · he walks', 'يَمْشِي'],
+  ['Ychrab', 'to drink · he drinks', 'يَشْرَبْ']
 ]}
 ]
 };
+
+/*
+  Verbs tab. persons are in the order of the conjugation slide.
+  Prompt: "you write (masc)". Answer: pronoun + ra- form + verb form, e.g. "nta rak tekteb".
+  base / third are the English verb ("write" / "writes") used to build the prompt.
+  Each verb lists only the forms the slides give; missing persons are simply not tested.
+*/
+window.VOCAB.persons = [
+  // [id, Darja pronoun, English label, English subject, tag after the verb, other accepted spellings]
+  ['ana', 'Ana', 'I', 'I', ''], ['nta', 'Nta', 'you (m)', 'you', '(masc)', ['ntaya']], ['nti', 'Nti', 'you (f)', 'you', '(fem)', ['ntiya']],
+  ['houwa', 'Houwa', 'he', 'he', '', ['howa']], ['hia', 'Hia', 'she', 'she', '', ['hiya']],
+  ['7na', '7na', 'we', 'we', ''], ['ntouma', 'Ntouma', 'you (plural)', 'you', '(plural)'], ['houma', 'Houma', 'they', 'they', '']
+];
+// ra- goes between the pronoun and the verb: "Ntouma rakoum tektebou" (you (plural) are writing)
+window.VOCAB.ra = {ana:'Rani', nta:'Rak', nti:'Raki', houwa:'Rahou', hia:'Rahi', '7na':'Rana', ntouma:'Rakoum', houma:'Rahoum'};
+window.VOCAB.verbs = [
+  {id:'kteb', name:'Yekteb', en:'to write', base:'write', third:'writes', deck:'The Present', forms:{ana:'Nekteb', nta:'Tekteb', nti:'Tektebi', houwa:'Yekteb', hia:'Tekteb', '7na':'Nektebou', ntouma:'Tektebou', houma:'Yektebou'}},
+  {id:'9ra', name:'Y9ra', en:'to read', base:'read', third:'reads', deck:'The Present', forms:{ana:'N9ra', nta:'T9ra', nti:'T9rai', houwa:'Y9ra', hia:'T9ra', '7na':'N9raou', ntouma:'T9raou', houma:'Y9raou'}},
+  {id:'mchi', name:'Ymchi', en:'to walk', base:'walk', third:'walks', deck:'The Present', forms:{ana:'Nmchi', nta:'Tmchi', nti:'Tmchi', houwa:'Ymchi', hia:'Tmchi', '7na':'Nmchiou', ntouma:'Tmchiou', houma:'Ymchiou'}},
+  // gen:true = the slides list the verb but not its table, so the forms are built with the slide formula
+  {id:'kdeb', name:'Yekdeb', en:'to lie', base:'lie', third:'lies', deck:'The Present', gen:true, forms:{ana:'Nekdeb', nta:'Tekdeb', nti:'Tekdebi', houwa:'Yekdeb', hia:'Tekdeb', '7na':'Nekdebou', ntouma:'Tekdebou', houma:'Yekdebou'}},
+  {id:'chrab', name:'Ychrab', en:'to drink', base:'drink', third:'drinks', deck:'The Present', gen:true, forms:{ana:'Nchrab', nta:'Tchrab', nti:'Tchrabi', houwa:'Ychrab', hia:'Tchrab', '7na':'Nchrabou', ntouma:'Tchrabou', houma:'Ychrabou'}},
+  {id:'skn', name:'Yeskoun', en:'to live (somewhere)', base:'live', third:'lives', deck:'Deck 1', forms:{ana:'Neskoun', nta:'Teskoun', nti:'Teskni', houwa:'Yeskoun', hia:'Teskoun'}},
+  {id:'khdem', name:'Yekhdem', en:'to work', base:'work', third:'works', deck:'Deck 1', forms:{ana:'Nakhdem', nta:'Tekhdem', nti:'Tekhdemi', houwa:'Yekhdem', hia:'Tekhdem'}},
+  {id:'7eb', name:'Y7eb', en:'to like', base:'like', third:'likes', deck:'Deck 1', forms:{ana:'N7eb', nta:'T7eb', nti:'T7ebbi', houwa:'Y7eb', hia:'T7eb'}}
+];

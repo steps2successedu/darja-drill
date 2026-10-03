@@ -33,6 +33,23 @@ Match shows one prompt, in English or Darja, with eight options in the other lan
 - **Passed:** a word is passed once you've picked it cleanly in **both directions** (English → Darja and Darja → English), with those clean answers on **different days**. Each question asks the direction you still need. A word never comes up both ways in one session. A miss or slow answer wipes that direction's evidence. Passed words come up less often, but still come up.
 - **Your usual time** is the median of your last 40 clean answers, kept separately for words, numbers and combos and for each direction.
 
+## Verbs
+
+The Verbs tab gives a verb (*Yekteb*, to write) and an English phrase ("you write (masc)"). You type the whole Darja phrase, which is pronoun, *ra-* form and verb: *nta rak tekteb*. The data is in `vocab.js` (`VOCAB.persons`, `VOCAB.ra`, `VOCAB.verbs`). Each verb lists only the forms its slides give, so persons it doesn't have aren't tested.
+
+- Each verb × person is its own spaced card, so a weak person (say "you (f)") comes back on its own.
+- **Marking:** each of the three parts is checked.
+  - **Exact:** "Right".
+  - **Same consonants and ending, spelt differently** (vowels, doubled letters, ch/sh, 7/h, 9/q, kh/5, y/i): "Right, spelt differently".
+  - **A wrong part:** named ("Check the ra- form").
+  - **A missing part:** "Needs all three parts".
+- You can drill singular, plural or all persons, and switch individual verbs on or off.
+- **Current verbs:**
+  - *yekteb*, *y9ra* and *ymchi* (Present deck, all 8 persons).
+  - *yekdeb* and *ychrab*: the deck lists these without a table, so their forms are built with the slide formula and tagged "Built from the slide formula".
+  - *yeskoun*, *yekhdem* and *y7eb* (Deck 1, singular only).
+- The pronoun accepts the slides' alternatives: *ntaya*, *ntiya*, *howa*, *hiya*.
+
 ## In-session repeats
 
 In Drill and Listen, a missed card comes back 8 cards later and an "Almost" 12 cards later, each at most twice. Longer gaps between attempts give better long-term recall (Pyc & Rawson, 2009).

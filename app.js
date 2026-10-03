@@ -28,7 +28,7 @@ const CARD = Object.fromEntries(CARDS.map(c => [c.id, c]));
    ========================================================= */
 const KEY = 'darja-drill-v1';
 const DEFAULTS = {dir: 'both', len: 20, newCap: 10, lLen: 20, lNewCap: 10, topics: TOPICS.map(t => t.id),
-  mLen: 20, additions: false, theme: 'auto', vowels: 'marked', rate: 0.85, voice: ''};
+  mLen: 20, vLen: 20, vPersons: 'all', additions: false, theme: 'auto', vowels: 'marked', rate: 0.85, voice: ''};
 function loadState() {
   let s = null;
   try { s = JSON.parse(localStorage.getItem(KEY)); } catch (e) {}
@@ -297,8 +297,8 @@ const Mark = (() => {
     guy: 'man', male: 'man', female: 'woman', lady: 'woman', girl: 'daughter', boy: 'son', kid: 'child', travel: 'travelling', traveling: 'travelling', travelling: 'travelling',
     reading: 'read', books: 'book', sports: 'sport'};
   const STOP = new Set('a an the to do does did and of in on at it its will be am is are was were for that this with that s d ll ve'.split(' '));
-  const PRON = {i: 1, me: 1, my: 1, mine: 1, we: 1, our: 1, us: 1, you: 2, your: 2, yours: 2, he: 3, his: 3, him: 3, she: 4, her: 4, hers: 4};
-  const WHO = {1: 'you yourself', 2: '“you”', 3: 'a man (he / his)', 4: 'a woman (she / her)'};
+  const PRON = {i: 1, me: 1, my: 1, mine: 1, we: 5, our: 5, ours: 5, us: 5, you: 2, your: 2, yours: 2, he: 3, his: 3, him: 3, she: 4, her: 4, hers: 4, they: 6, their: 6, theirs: 6, them: 6};
+  const WHO = {1: 'you yourself', 2: '“you”', 3: 'a man (he / his)', 4: 'a woman (she / her)', 5: '“we / our”', 6: '“they / their”'};
   const GROUPS = [['maternal', 'paternal'], ['mother', 'father'], ['brother', 'sister'], ['son', 'daughter'], ['nephew', 'niece'], ['uncle', 'aunt'],
     ['grandmother', 'grandfather'], ['next', 'last'], ['tomorrow', 'yesterday'], ['before', 'after'], ['man', 'woman'], ['day', 'week', 'month', 'year'],
     ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'], ['spring', 'summer', 'autumn', 'winter'],
@@ -397,7 +397,7 @@ const Mark = (() => {
       const n = words.length;
       const h = words.filter(w => inTok.some(t => hit(t, w))).length;
       let v = 'miss';
-      if (n === 0) v = (aPers.size ? [...aPers].some(q => inPers.has(q)) : inTok.length) ? 'got' : 'miss';   // e.g. "And you?"
+      if (n === 0) v = (aPers.size ? [...aPers].some(q => inPers.has(q)) : inTok.join(' ') === aTok.join(' ')) ? 'got' : 'miss';   // "And you?", "this"
       else if (n <= 2) v = h === n ? 'got' : h >= 1 && n === 2 ? 'almost' : 'miss';
       else v = h / n >= (n >= 5 ? .6 : .66) ? 'got' : h >= 1 && h / n >= .25 ? 'almost' : 'miss';
       // who it's about: "his name" typed for "your name"
@@ -766,6 +766,128 @@ function mFinish() {
 }
 
 /* =========================================================
+   8c. Verbs (conjugation: verb + person → type the form)
+   ---------------------------------------------------------
+   Forms come only from the slides (vocab.js → VOCAB.verbs). Each verb × person is
+   its own spaced card, so a weak person (say "you (f)") comes back on its own.
+   Marking: exact after tidying gets "Right". A different spelling of the same
+   consonants and ending (vowels, doubled letters, ch/sh, 7/h, 9/q, kh/5) gets
+   "Right, spelt differently". Anything else is a miss, so a wrong prefix or
+   ending is always caught.
+   ========================================================= */
+const PERSONS = window.VOCAB.persons || [];
+const VERBS = window.VOCAB.verbs || [];
+const RA = window.VOCAB.ra || {};
+const SING = ['ana', 'nta', 'nti', 'houwa', 'hia'];
+const VCARDS = [];
+VERBS.forEach(v => PERSONS.forEach(([pid, pDz, pEn, subj, tag, pAlts = []]) => {
+  const form = v.forms[pid]; if (!form || !RA[pid]) return;
+  const parts = [pDz.toLowerCase(), RA[pid].toLowerCase(), form.toLowerCase()];             // pronoun + ra- + verb
+  const item = {key: `conj|${v.id}|${pid}`, topic: {id: 'verb-' + v.id, name: v.name, week: 0}, dz: parts.join(' '), parts,
+    en: '', alt: '', ar: '', arPlain: '', x: false, u: false, verb: v, pid, pDz, pEn, pAlts};
+  // the English the way you'd say it: "you write (masc)", "she writes"
+  item.en = [subj || pEn, ['he', 'she'].includes(subj) ? (v.third || v.base) : (v.base || v.en), tag].filter(Boolean).join(' ');
+  const c = {id: item.key + '|conj', item, mode: 'conj'};
+  VCARDS.push(c); CARD[c.id] = c;
+}));
+let V = null;
+S.set.vOff = S.set.vOff || [];
+function vEligible() {
+  const ps = S.set.vPersons === 'sing' ? SING : S.set.vPersons === 'plur' ? PERSONS.map(p => p[0]).filter(p => !SING.includes(p)) : PERSONS.map(p => p[0]);
+  return VCARDS.filter(c => !S.set.vOff.includes(c.item.verb.id) && ps.includes(c.item.pid));
+}
+function vPlan() {
+  const t = now(), due = [], fresh = [];
+  vEligible().forEach(c => { const s = S.cards[c.id]; if (!s) fresh.push(c); else if (s.due <= t) due.push(c); });
+  return {due, fresh};
+}
+function renderVerbSetup() {
+  const p = vPlan(), n = Math.min(S.set.vLen, p.due.length + p.fresh.length);
+  $('vVerbs').innerHTML = VERBS.map(v => `<button class="chip" data-verb="${v.id}" aria-pressed="${!S.set.vOff.includes(v.id)}" type="button">${esc(v.name)} <small>${esc(v.en)}</small></button>`).join('');
+  $('vPlan').innerHTML = `<div><b>${p.due.length}</b><span>due now</span></div><div><b>${p.fresh.length}</b><span>not tried yet</span></div>`;
+  $('vStart').disabled = !n;
+  $('vStart').textContent = n ? `Start — ${n} forms` : 'All done for now. Come back later.';
+}
+function vBuild() {
+  const {due, fresh} = vPlan(), len = S.set.vLen;
+  const d = due.sort((a, b) => S.cards[a.id].due - S.cards[b.id].due).slice(0, len);
+  const f = shuffle(fresh).slice(0, len - d.length);
+  return shuffle([...d, ...f]).map(c => ({c, repeat: false}));
+}
+function vStart(q) {
+  V = {q, i: 0, first: {}, again: {}};
+  $('vSetup').hidden = true; $('vDone').hidden = true; $('vRun').hidden = false;
+  vCard();
+}
+function vCard() {
+  if (V.i >= V.q.length) return vFinish();
+  const {c, repeat} = V.q[V.i], it = c.item;
+  Object.assign(V, {answered: false, verdict: null});
+  $('vCount').textContent = `${V.i + 1} / ${V.q.length}`;
+  $('vDeck').textContent = it.verb.deck;
+  $('vBar').style.width = (V.i / V.q.length * 100) + '%';
+  $('vMeta').innerHTML = (!S.cards[c.id] ? '<span class="tag acc">New</span>' : '') + (repeat ? '<span class="tag acc">Again</span>' : '') +
+    (it.verb.gen ? '<span class="tag warn">Built from the slide formula</span>' : '');
+  $('vVerb').innerHTML = `${digits(it.verb.name)} <span style="font-weight:400; font-size:.6em; color:var(--ink-2)">${esc(it.verb.en)}</span>`;
+  $('vPerson').innerHTML = `<b>${esc(it.en)}</b>`;
+  $('vInput').value = ''; $('vInput').disabled = false; $('vCheck').disabled = false;
+  $('vResult').hidden = true;
+  $('vInput').focus({preventScroll: true});
+}
+function vNorm(s) {
+  return s.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '')
+    .replace(/[^a-z0-9]/g, '').replace(/sh/g, 'ch').replace(/ch/g, 'C').replace(/kh|5/g, 'K').replace(/gh/g, 'G')
+    .replace(/h/g, '7').replace(/9|q/g, 'Q').replace(/oo|ou|u/g, 'U');
+}
+const vLoose = s => vNorm(s).replace(/y/g, 'i').replace(/[aeo]/g, '').replace(/(.)\1+/g, '$1');
+function vCheck(e) {
+  e.preventDefault();
+  if (!V || V.answered) return;
+  const val = $('vInput').value; if (!val.trim()) return;
+  const it = V.q[V.i].c.item;
+  V.answered = true;
+  // three parts: pronoun, ra- form, verb. Each must be there and right.
+  const got = val.trim().split(/\s+/), names = ['pronoun', 'ra- form', 'verb'];
+  const opts = i => i === 0 ? [it.parts[0], ...it.pAlts] : [it.parts[i]];       // houwa / howa, hia / hiya…
+  const exact = got.length === 3 && got.every((g, i) => opts(i).some(o => vNorm(g) === vNorm(o)));
+  const loose = got.length === 3 && got.every((g, i) => opts(i).some(o => vLoose(g) === vLoose(o)));
+  const wrong = got.length === 3 ? names.filter((n, i) => !opts(i).some(o => vLoose(got[i]) === vLoose(o))) : null;
+  V.verdict = exact ? {v: 'got', msg: 'Right'}
+    : loose ? {v: 'got', msg: `Right, spelt differently: the slides write ${it.dz}`}
+    : got.length !== 3 ? {v: 'miss', msg: `Needs all three parts — ${it.dz}`}
+    : {v: 'miss', msg: wrong.length === 3 ? `Not quite — ${it.dz}` : `Check the ${wrong.join(' and ')} — ${it.dz}`};
+  vShowVerdict();
+  $('vTable').innerHTML = VCARDS.filter(c => c.item.verb === it.verb).map(c => c.item).map(({pid, en: pEn, pDz}) =>
+    `<tr class="${pid === it.pid ? 'hit' : ''}"><td>${esc(pEn)}</td><td>${digits(pDz.toLowerCase())} ${digits(RA[pid].toLowerCase())} ${digits(it.verb.forms[pid].toLowerCase())}</td></tr>`).join('');
+  $('vInput').disabled = true; $('vCheck').disabled = true;
+  $('vResult').hidden = false;
+  $('vNext').focus({preventScroll: true});
+}
+function vShowVerdict() {
+  const {v, msg} = V.verdict, el = $('vVerdict');
+  el.textContent = msg; el.style.color = v === 'got' ? 'var(--accent)' : 'var(--miss)';
+  $('vOverride').hidden = v === 'got';
+}
+function vNext() {
+  if (!V || !V.answered) return;
+  const e = V.q[V.i], c = e.c, g = V.verdict.v, first = !(c.id in V.first);
+  if (first) V.first[c.id] = g;
+  if (applyGrade(c, g, first) && (V.again[c.id] || 0) < 2) {
+    V.again[c.id] = (V.again[c.id] || 0) + 1;
+    V.q.splice(Math.min(V.i + 1 + 7, V.q.length), 0, {c, repeat: true});
+  }
+  V.i++; vCard();
+}
+function vFinish() {
+  const weak = Object.keys(V.first).filter(id => V.first[id] !== 'got');
+  $('vRun').hidden = true; $('vDone').hidden = false;
+  $('vDone').innerHTML = doneHTML(V.first, weak, 'vAgain');
+  const again = $('vAgain');
+  if (again) again.onclick = () => vStart(shuffle(weak.map(id => ({c: CARD[id], repeat: true}))));
+  Sync.now();
+}
+
+/* =========================================================
    9. Progress
    ========================================================= */
 let pMode = 'speak';
@@ -775,7 +897,7 @@ function renderProgress() {
   if (!S.days[dayKey(d)]) d.setDate(d.getDate() - 1);    // today not done yet doesn't break it
   while (S.days[dayKey(d)]) { streak++; d.setDate(d.getDate() - 1); }
   const today = S.days[dayKey()] || {n: 0};
-  const seenItems = new Set(Object.keys(S.cards).map(id => id.split('|').slice(0, 2).join('|')));
+  const seenItems = new Set(Object.keys(S.cards).filter(id => !id.startsWith('conj|')).map(id => id.split('|').slice(0, 2).join('|')));
   $('pStats').innerHTML =
     `<div class="stat"><b>${streak}</b><span>day streak</span></div>` +
     `<div class="stat"><b>${today.n}</b><span>reviewed today</span></div>` +
@@ -932,7 +1054,7 @@ let tab = 'drill';
 function showTab(t) {
   tab = t;
   document.querySelectorAll('nav.tabs button').forEach(b => b.setAttribute('aria-current', String(b.dataset.tab === t)));
-  ['drill', 'listen', 'match', 'progress', 'settings'].forEach(x => $('tab-' + x).hidden = x !== t);
+  ['drill', 'listen', 'match', 'verbs', 'progress', 'settings'].forEach(x => $('tab-' + x).hidden = x !== t);
   if (t !== 'listen') Voice.stop();
   refreshVisible();
   window.scrollTo({top: 0});
@@ -941,13 +1063,14 @@ function refreshVisible() {
   if (tab === 'drill' && !$('dSetup').hidden) renderDrillSetup();
   if (tab === 'listen' && !$('lSetup').hidden) renderListenSetup();
   if (tab === 'match' && !$('mSetup').hidden) renderMatchSetup();
+  if (tab === 'verbs' && !$('vSetup').hidden) renderVerbSetup();
   if (tab === 'progress') renderProgress();
   if (tab === 'settings') renderSettings();
 }
 function backToSetup() {
-  D = null; L = null; M = null; Voice.stop();
-  ['dRun', 'dDone', 'lRun', 'lDone', 'mRun', 'mDone'].forEach(id => $(id).hidden = true);
-  $('dSetup').hidden = false; $('lSetup').hidden = false; $('mSetup').hidden = false;
+  D = null; L = null; M = null; V = null; Voice.stop();
+  ['dRun', 'dDone', 'lRun', 'lDone', 'mRun', 'mDone', 'vRun', 'vDone'].forEach(id => $(id).hidden = true);
+  $('dSetup').hidden = false; $('lSetup').hidden = false; $('mSetup').hidden = false; $('vSetup').hidden = false;
   refreshVisible();
 }
 
@@ -988,6 +1111,18 @@ $('lEnd').onclick = () => { if (L) { L.q = L.q.slice(0, L.i); lFinish(); } };
 $('mStart').onclick = () => { const q = buildMatch(S.set.mLen); if (q.length) mStart(q); };
 $('mGrid').addEventListener('click', e => { const t = e.target.closest('.tile'); if (t) mPick(+t.dataset.i); });
 $('mEnd').onclick = () => { if (M) { M.q = M.q.slice(0, M.i); mFinish(); } };
+
+$('vStart').onclick = () => { const q = vBuild(); if (q.length) vStart(q); };
+$('vForm').addEventListener('submit', vCheck);
+$('vNext').onclick = vNext;
+$('vOverride').onclick = () => { if (V && V.answered) { V.verdict = {v: 'got', msg: 'Counted as right'}; vShowVerdict(); } };
+$('vEnd').onclick = () => { if (V) { V.q = V.q.slice(0, V.i); vFinish(); } };
+$('vVerbs').addEventListener('click', e => {
+  const b = e.target.closest('[data-verb]'); if (!b) return;
+  const id = b.dataset.verb, off = S.set.vOff;
+  S.set.vOff = off.includes(id) ? off.filter(x => x !== id) : [...off, id];
+  save(); renderVerbSetup();
+});
 
 $('pMode').onclick = e => {
   const b = e.target.closest('button'); if (!b) return;
@@ -1060,6 +1195,7 @@ document.addEventListener('keydown', e => {
   }
   if (e.target.closest('input, select, textarea')) {
     if (tab === 'listen' && L && L.answered && e.key === 'Enter') { e.preventDefault(); lNext(); }
+    if (tab === 'verbs' && V && V.answered && e.key === 'Enter') { e.preventDefault(); vNext(); }
     return;
   }
   if (tab === 'drill' && D && !$('dRun').hidden) {
@@ -1068,6 +1204,7 @@ document.addEventListener('keydown', e => {
     if (e.key === '2') dGrade('almost');
     if (e.key === '3') dGrade('got');
   }
+  if (tab === 'verbs' && V && V.answered && !$('vRun').hidden && (e.key === 'r' || e.key === 'R') && !$('vOverride').hidden) { $('vOverride').click(); return; }
   if (tab === 'match' && M && !$('mRun').hidden && /^[1-8]$/.test(e.key) && !e.altKey && !e.ctrlKey && !e.metaKey) { mPick(+e.key - 1); return; }
   if (tab === 'listen' && L && !$('lRun').hidden) {
     if (!e.altKey && !e.ctrlKey && !e.metaKey && !e.repeat && /^Key[PSHR]$/.test(e.code)) { e.preventDefault(); listenKey(e.code); }
