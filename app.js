@@ -371,8 +371,9 @@ const Mark = (() => {
     return any ? Math.round(total + cur) : NaN;
   }
   function check(item, input) {
-    if (/^[\d,]+$/.test(item.en)) {
-      const want = +item.en.replace(/,/g, ''), got = parseNumber(input);
+    const numEn = item.en.match(/^([\d,]+)( DA)?$/);               // numbers, and prices like "20 DA"
+    if (numEn) {
+      const want = +numEn[1].replace(/,/g, ''), got = parseNumber(input.replace(/\b(da|dzd|dinars?)\b/gi, ''));
       if (got === want) return {v: 'got', msg: 'Right'};
       return {v: 'miss', msg: isNaN(got) ? 'Not this one' : `Not quite — you wrote ${got.toLocaleString('en-AU')}`};
     }
@@ -590,16 +591,17 @@ function lFinish() {
    words, numbers and combos, and for each direction.
    ========================================================= */
 const NUM_TOPICS = ['numbers', Combo.ID];
+const MONEY_TOPICS = ['money'];                                 // prices get their own questions, so "DA" isn't a clue
 let M = null;
 S.match = S.match || {};
 S.rt = S.rt || {};
 function matchPool() {
-  const st = S.set, words = [], nums = [];
+  const st = S.set, words = [], nums = [], money = [];
   ITEMS.forEach(it => {
     if (!st.topics.includes(it.topic.id) || (!st.additions && it.x)) return;
-    (NUM_TOPICS.includes(it.topic.id) ? nums : words).push(it);
+    (MONEY_TOPICS.includes(it.topic.id) ? money : NUM_TOPICS.includes(it.topic.id) ? nums : words).push(it);
   });
-  return {words, nums, combos: Combo.on()};
+  return {words, nums, money, combos: Combo.on()};
 }
 // A word is "passed" in Match once you've picked it cleanly in BOTH directions
 // (English → Darja and Darja → English), with those clean answers on different days.
@@ -634,10 +636,10 @@ function distractors(it, pool) {
   const out = [], en = new Set([it.en.toLowerCase()]), dz = new Set([it.dz.toLowerCase()]);
   const add = x => { const e = x.en.toLowerCase(), d = x.dz.toLowerCase(); if (en.has(e) || dz.has(d)) return false; en.add(e); dz.add(d); out.push(x); return true; };
   if (it.combo) { for (let i = 0; i < 40 && out.length < 7; i++) add(comboLike(it)); }
-  else if (NUM_TOPICS.includes(it.topic.id)) {                // numbers: similar size, so the length isn't a clue
+  else if (NUM_TOPICS.includes(it.topic.id) || MONEY_TOPICS.includes(it.topic.id)) {   // similar size, so length isn't a clue
     const near = shuffle(pool.filter(x => x !== it)).sort((a, b) => Math.abs(digitsOf(a) - digitsOf(it)) - Math.abs(digitsOf(b) - digitsOf(it)));
     near.slice(0, 5).forEach(add);
-    if (Combo.on()) for (let i = 0; i < 20 && out.length < 7; i++) add(comboLike(it));
+    if (Combo.on() && !MONEY_TOPICS.includes(it.topic.id)) for (let i = 0; i < 20 && out.length < 7; i++) add(comboLike(it));
     near.slice(5).forEach(x => out.length < 7 && add(x));
   }
   else {
@@ -649,7 +651,7 @@ function distractors(it, pool) {
   return out;
 }
 function buildMatch(n) {
-  const p = matchPool(), items = [...p.words, ...p.nums];
+  const p = matchPool(), items = [...p.words, ...p.nums, ...p.money];
   const nTopics = S.set.topics.filter(id => TOPICS.some(t => t.id === id)).length;
   const nC = p.combos ? (nTopics ? Math.max(2, Math.round(n / (nTopics + 1))) : n) : 0;
   const q = items.map(it => [matchScore(it), it]).sort((a, b) => b[0] - a[0]).slice(0, n - nC).map(([, it]) => it);
@@ -658,11 +660,11 @@ function buildMatch(n) {
 }
 function renderMatchSetup() {
   const p = matchPool();
-  const all = [...p.words, ...p.nums];
+  const all = [...p.words, ...p.nums, ...p.money];
   const flagged = all.filter(it => S.match[it.key] && S.match[it.key].flag).length;
   const passed = all.filter(it => isPassed(S.match[it.key])).length;
   $('mPlan').innerHTML = `<div><b>${all.length}${p.combos ? '+' : ''}</b><span>in play${p.combos ? ' + combos' : ''}</span></div><div><b>${passed}</b><span>passed both ways</span></div><div><b>${flagged}</b><span>to revisit</span></div>`;
-  const ok = p.words.length >= 8 || p.nums.length >= 8 || p.combos;
+  const ok = p.words.length >= 8 || p.nums.length >= 8 || p.money.length >= 8 || p.combos;
   $('mStart').disabled = !ok;
   $('mStart').textContent = ok ? `Start — ${S.set.mLen} questions` : 'Pick some topics in the options.';
 }
@@ -671,11 +673,11 @@ function mStart(queue) {
   $('mSetup').hidden = true; $('mDone').hidden = true; $('mRun').hidden = false;
   mCard();
 }
-const famOf = it => it.combo ? 'combo' : NUM_TOPICS.includes(it.topic.id) ? 'num' : 'word';
+const famOf = it => it.combo ? 'combo' : MONEY_TOPICS.includes(it.topic.id) ? 'money' : NUM_TOPICS.includes(it.topic.id) ? 'num' : 'word';
 function mCard() {
   if (M.i >= M.q.length) return mFinish();
   const {it, repeat, dir} = M.q[M.i], fam = famOf(it);
-  const pool = fam === 'word' ? M.pool.words : M.pool.nums;
+  const pool = fam === 'word' ? M.pool.words : fam === 'money' ? M.pool.money : M.pool.nums;
   const opts = shuffle([it, ...distractors(it, pool)]);
   Object.assign(M, {it, dir, fam, opts, tapped: false, done: false});
   $('mCount').textContent = `${M.i + 1} / ${M.q.length}`;
