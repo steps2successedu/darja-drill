@@ -533,7 +533,7 @@ function lShowVerdict() {
   const {v, msg} = L.verdict;
   const el = $('lVerdict');
   el.textContent = v === 'got' && L.hinted ? 'Right, with the Arabizi hint' : msg;
-  el.style.color = v === 'got' ? 'var(--accent)' : v === 'almost' ? 'var(--almost)' : 'var(--miss)';
+  el.style.color = v === 'got' ? 'var(--good)' : v === 'almost' ? 'var(--almost)' : 'var(--miss)';
   $('lOverride').hidden = v === 'got';
 }
 function lCheck(e) {
@@ -865,7 +865,7 @@ function vCheck(e) {
 }
 function vShowVerdict() {
   const {v, msg} = V.verdict, el = $('vVerdict');
-  el.textContent = msg; el.style.color = v === 'got' ? 'var(--accent)' : 'var(--miss)';
+  el.textContent = msg; el.style.color = v === 'got' ? 'var(--good)' : 'var(--miss)';
   $('vOverride').hidden = v === 'got';
 }
 function vNext() {
