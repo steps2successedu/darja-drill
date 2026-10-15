@@ -35,19 +35,27 @@ Match shows one prompt, in English or Darja, with eight options in the other lan
 
 ## Verbs
 
-The Verbs tab gives a verb (*Yekteb*, to write) and an English phrase ("you write (masc)"). You type the whole Darja phrase, which is pronoun, *ra-* form and verb: *nta rak tekteb*. The data is in `vocab.js` (`VOCAB.persons`, `VOCAB.ra`, `VOCAB.verbs`). Each verb lists only the forms its slides give, so persons it doesn't have aren't tested.
+The Verbs tab gives a verb (*Yekteb*, to write) and an English phrase ("you write (masc)" or "you walked (masc)"). You type the whole Darja phrase:
 
-- Each verb × person is its own spaced card, so a weak person (say "you (f)") comes back on its own.
-- **Marking:** each of the three parts is checked.
+- **Present:** pronoun, *ra-* form and verb — *nta rak tekteb*.
+- **Past:** pronoun and verb — *nta mchit*.
+
+Session options let you drill Present, Past or both. The data is in `vocab.js` (`VOCAB.persons`, `VOCAB.ra`, `VOCAB.verbs`; `forms` holds the present, `past` the past, `pastEn` the English past). Each verb lists only the forms its slides give, so persons it doesn't have aren't tested.
+
+- Each verb × person × tense is its own spaced card, so a weak person (say "you (f)") comes back on its own.
+- **Marking:** each part is checked.
   - **Exact:** "Right".
   - **Same consonants and ending, spelt differently** (vowels, doubled letters, ch/sh, 7/h, 9/q, kh/5, y/i): "Right, spelt differently".
   - **A wrong part:** named ("Check the ra- form").
-  - **A missing part:** "Needs all three parts".
-- You can drill singular, plural or all persons, and switch individual verbs on or off.
-- **Current verbs:**
+  - **A missing part:** "Needs all three parts" (present) or "Needs both parts" (past).
+- You can drill singular, plural or all persons, and switch individual verbs on or off. The verb list shows only verbs that have the chosen tense.
+- **Present verbs:**
   - *yekteb*, *y9ra* and *ymchi* (Present deck, all 8 persons).
   - *yekdeb* and *ychrab*: the deck lists these without a table, so their forms are built with the slide formula and tagged "Built from the slide formula".
   - *yeskoun*, *yekhdem* and *y7eb* (Deck 1, singular only).
+- **Past verbs** (Verbs in the Past Tense deck):
+  - Full tables (all 8 persons): *y7awas*, *yerfed*, *yet3allam*, *yakoul*, *y9oul*, plus *ymchi* and *y9ra*.
+  - Key forms only ("I" and "he"): *ybda*, *ynsa*, *ysalli*, *ykhalli*, *y7ab*, *y7al*, *yrad*, *ydir*, *y9is*, *ychouf*, *ydjouz*.
 - The pronoun accepts the slides' alternatives: *ntaya*, *ntiya*, *howa*, *hiya*.
 
 ## In-session repeats

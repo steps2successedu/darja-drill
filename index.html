@@ -190,13 +190,17 @@
     <div id="vSetup" class="panel pad stack">
       <div>
         <h2>Conjugate it</h2>
-        <p class="muted">You get a verb and an English phrase like “you write (masc)”. Write the whole phrase in Darja: pronoun, <i>ra-</i> form and verb — <i>nta rak tekteb</i>. Spelling is marked loosely (vowels, ch/sh, 7/h), but each part must be the right one.</p>
+        <p class="muted">You get a verb and an English phrase like “you write (masc)”. Write the whole phrase in Darja. Present: pronoun, <i>ra-</i> form and verb — <i>nta rak tekteb</i>. Past: pronoun and verb — <i>nta mchit</i>. Spelling is marked loosely (vowels, ch/sh, 7/h), but each part must be the right one.</p>
       </div>
       <div class="plan" id="vPlan"></div>
       <button class="go" id="vStart" type="button">Start</button>
       <details class="details">
         <summary>Session options</summary>
         <div class="stack" style="margin-top:16px">
+          <div><p class="label">Tense</p>
+            <div class="seg" data-setting="vTense">
+              <button data-v="pres" type="button">Present</button><button data-v="past" type="button">Past</button><button data-v="both" type="button">Both</button>
+            </div></div>
           <div><p class="label">Persons</p>
             <div class="seg" data-setting="vPersons">
               <button data-v="sing" type="button">Singular</button><button data-v="plur" type="button">Plural</button><button data-v="all" type="button">All</button>

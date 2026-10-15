@@ -15,7 +15,7 @@
   next number, and paste the new items in. Nothing else needs to change.
 */
 window.VOCAB = {
-updated: '2026-10-04',
+updated: '2026-10-15',
 topics: [
 {id:'questions', name:'Questions', week:1, deck:'Deck 1', items:[
   ['Wech rak?', 'How are you? — to a man', 'وَاشْ رَاكْ؟', 'Ki rak? · Labas?'],
@@ -329,6 +329,26 @@ topics: [
   ['Y9ra', 'to read · he reads', 'يَقْرَا'],
   ['Ymchi', 'to walk · he walks', 'يَمْشِي'],
   ['Ychrab', 'to drink · he drinks', 'يَشْرَبْ']
+]},
+{id:'past', name:'Past verbs', week:9, deck:'Verbs in the Past Tense', items:[
+  ['Y7awas', 'to look for · to explore', 'يْحَوَّسْ', '', 'u'],
+  ['Yerfed', 'to carry', 'يَرْفَدْ'],
+  ['Yet3allam', 'to learn', 'يَتْعَلَّمْ'],
+  ['Yakoul', 'to eat', 'يَاكُلْ'],
+  ['Ysalli', 'to pray', 'يْصَلِّي'],
+  ['Ykhalli', 'to let', 'يْخَلِّي'],
+  ['Ybda', 'to start', 'يَبْدَا'],
+  ['Ynsa', 'to forget', 'يَنْسَى'],
+  ['Y7al', 'to open · to solve', 'يْحَلّْ'],
+  ['Y7ab', 'to love · to want', 'يْحَبّْ'],
+  ['Yrad', 'to reply · to return', 'يْرَدّْ', '', 'u'],
+  ['Yzid', 'to add', 'يْزِيدْ'],
+  ['Ydir', 'to do', 'يْدِيرْ'],
+  ['Y9is · Ymas', 'to touch', 'يْقِيسْ', '', 'u'],
+  ['Ychouf', 'to see', 'يْشُوفْ'],
+  ['Yzour', 'to visit', 'يْزُورْ'],
+  ['Y9oul', 'to say', 'يْقُولْ'],
+  ['Ydjouz', 'to pass', 'يْجُوزْ']
 ]}
 ]
 };
@@ -349,12 +369,30 @@ window.VOCAB.persons = [
 window.VOCAB.ra = {ana:'Rani', nta:'Rak', nti:'Raki', houwa:'Rahou', hia:'Rahi', '7na':'Rana', ntouma:'Rakoum', houma:'Rahoum'};
 window.VOCAB.verbs = [
   {id:'kteb', name:'Yekteb', en:'to write', base:'write', third:'writes', deck:'The Present', forms:{ana:'Nekteb', nta:'Tekteb', nti:'Tektebi', houwa:'Yekteb', hia:'Tekteb', '7na':'Nektebou', ntouma:'Tektebou', houma:'Yektebou'}},
-  {id:'9ra', name:'Y9ra', en:'to read', base:'read', third:'reads', deck:'The Present', forms:{ana:'N9ra', nta:'T9ra', nti:'T9rai', houwa:'Y9ra', hia:'T9ra', '7na':'N9raou', ntouma:'T9raou', houma:'Y9raou'}},
-  {id:'mchi', name:'Ymchi', en:'to walk', base:'walk', third:'walks', deck:'The Present', forms:{ana:'Nmchi', nta:'Tmchi', nti:'Tmchi', houwa:'Ymchi', hia:'Tmchi', '7na':'Nmchiou', ntouma:'Tmchiou', houma:'Ymchiou'}},
+  {id:'9ra', name:'Y9ra', en:'to read', base:'read', third:'reads', deck:'The Present', forms:{ana:'N9ra', nta:'T9ra', nti:'T9rai', houwa:'Y9ra', hia:'T9ra', '7na':'N9raou', ntouma:'T9raou', houma:'Y9raou'}, pastEn:'read', past:{ana:'9rit', nta:'9rit', nti:'9riti', houwa:'9ra', hia:'9raat', '7na':'9rina', ntouma:'9ritou', houma:'9raou'}},
+  {id:'mchi', name:'Ymchi', en:'to walk', base:'walk', third:'walks', deck:'The Present', forms:{ana:'Nmchi', nta:'Tmchi', nti:'Tmchi', houwa:'Ymchi', hia:'Tmchi', '7na':'Nmchiou', ntouma:'Tmchiou', houma:'Ymchiou'}, pastEn:'walked', past:{ana:'Mchit', nta:'Mchit', nti:'Mchiti', houwa:'Mcha', hia:'Mchaat', '7na':'Mchina', ntouma:'Mchitou', houma:'Mchaou'}},
   // gen:true = the slides list the verb but not its table, so the forms are built with the slide formula
   {id:'kdeb', name:'Yekdeb', en:'to lie', base:'lie', third:'lies', deck:'The Present', gen:true, forms:{ana:'Nekdeb', nta:'Tekdeb', nti:'Tekdebi', houwa:'Yekdeb', hia:'Tekdeb', '7na':'Nekdebou', ntouma:'Tekdebou', houma:'Yekdebou'}},
   {id:'chrab', name:'Ychrab', en:'to drink', base:'drink', third:'drinks', deck:'The Present', gen:true, forms:{ana:'Nchrab', nta:'Tchrab', nti:'Tchrabi', houwa:'Ychrab', hia:'Tchrab', '7na':'Nchrabou', ntouma:'Tchrabou', houma:'Ychrabou'}},
   {id:'skn', name:'Yeskoun', en:'to live (somewhere)', base:'live', third:'lives', deck:'Deck 1', forms:{ana:'Neskoun', nta:'Teskoun', nti:'Teskni', houwa:'Yeskoun', hia:'Teskoun'}},
   {id:'khdem', name:'Yekhdem', en:'to work', base:'work', third:'works', deck:'Deck 1', forms:{ana:'Nakhdem', nta:'Tekhdem', nti:'Tekhdemi', houwa:'Yekhdem', hia:'Tekhdem'}},
-  {id:'7eb', name:'Y7eb', en:'to like', base:'like', third:'likes', deck:'Deck 1', forms:{ana:'N7eb', nta:'T7eb', nti:'T7ebbi', houwa:'Y7eb', hia:'T7eb'}}
+  {id:'7eb', name:'Y7eb', en:'to like', base:'like', third:'likes', deck:'Deck 1', forms:{ana:'N7eb', nta:'T7eb', nti:'T7ebbi', houwa:'Y7eb', hia:'T7eb'}},
+  // Past-only verbs (Verbs in the Past Tense). Prompt: "you walked (masc)". Answer: pronoun + past form, e.g. "nta mchit".
+  {id:'p-7awas', name:'Y7awas', en:'to look for · to explore', deck:'Verbs in the Past Tense', pastEn:'explored', past:{ana:'7awast', nta:'7awast', nti:'7awasti', houwa:'7awas', hia:'7awsat', '7na':'7awsna', ntouma:'7awstou', houma:'7awsou'}},
+  {id:'p-rfed', name:'Yerfed', en:'to carry', deck:'Verbs in the Past Tense', pastEn:'carried', past:{ana:'Rfedt', nta:'Rfedt', nti:'Rfedti', houwa:'Rfed', hia:'Rfedat', '7na':'Rfedna', ntouma:'Rfedtou', houma:'Rfedou'}},
+  {id:'p-t3allam', name:'Yet3allam', en:'to learn', deck:'Verbs in the Past Tense', pastEn:'learnt', past:{ana:'T3allamt', nta:'T3allamt', nti:'T3allamti', houwa:'T3allam', hia:'T3allamat', '7na':'T3allamna', ntouma:'T3allamtou', houma:'T3allamou'}},
+  {id:'p-akoul', name:'Yakoul', en:'to eat', deck:'Verbs in the Past Tense', pastEn:'ate', past:{ana:'Klit', nta:'Klit', nti:'Kliti', houwa:'Kla', hia:'Klat', '7na':'Klina', ntouma:'Klitou', houma:'Klaou'}},
+  {id:'p-9oul', name:'Y9oul', en:'to say', deck:'Verbs in the Past Tense', pastEn:'said', past:{ana:'9oult', nta:'9oult', nti:'9oulti', houwa:'9al', hia:'9alat', '7na':'9oulna', ntouma:'9oultou', houma:'9alou'}},
+  // key forms: the slides give only "I" and "he" for these
+  {id:'p-bda', name:'Ybda', en:'to start', deck:'Verbs in the Past Tense', pastEn:'started', past:{ana:'Bdit', houwa:'Bda'}},
+  {id:'p-nsa', name:'Ynsa', en:'to forget', deck:'Verbs in the Past Tense', pastEn:'forgot', past:{ana:'Nsit', houwa:'Nsa'}},
+  {id:'p-salla', name:'Ysalli', en:'to pray', deck:'Verbs in the Past Tense', pastEn:'prayed', past:{ana:'Sallit', houwa:'Salla'}},
+  {id:'p-khalla', name:'Ykhalli', en:'to let', deck:'Verbs in the Past Tense', pastEn:'let', past:{ana:'Khallit', houwa:'Khalla'}},
+  {id:'p-7ab', name:'Y7ab', en:'to love · to want', deck:'Verbs in the Past Tense', pastEn:'wanted', past:{ana:'7abit', houwa:'7ab'}},
+  {id:'p-7al', name:'Y7al', en:'to open · to solve', deck:'Verbs in the Past Tense', pastEn:'opened', past:{ana:'7alit', houwa:'7al'}},
+  {id:'p-rad', name:'Yrad', en:'to reply · to return', deck:'Verbs in the Past Tense', pastEn:'replied', past:{ana:'Radit', houwa:'Rad'}},
+  {id:'p-dar', name:'Ydir', en:'to do', deck:'Verbs in the Past Tense', pastEn:'did', past:{ana:'Dert', houwa:'Dar'}},
+  {id:'p-9as', name:'Y9is', en:'to touch', deck:'Verbs in the Past Tense', pastEn:'touched', past:{ana:'9est', houwa:'9as'}},
+  {id:'p-chaf', name:'Ychouf', en:'to see', deck:'Verbs in the Past Tense', pastEn:'saw', past:{ana:'Chouft', houwa:'Chaf'}},
+  {id:'p-djaz', name:'Ydjouz', en:'to pass', deck:'Verbs in the Past Tense', pastEn:'passed', past:{ana:'Djouzt', houwa:'Djaz'}}
 ];

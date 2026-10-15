@@ -28,7 +28,7 @@ const CARD = Object.fromEntries(CARDS.map(c => [c.id, c]));
    ========================================================= */
 const KEY = 'darja-drill-v1';
 const DEFAULTS = {dir: 'both', len: 20, newCap: 10, lLen: 20, lNewCap: 10, topics: TOPICS.map(t => t.id),
-  mLen: 20, vLen: 20, vPersons: 'all', additions: false, theme: 'auto', vowels: 'marked', rate: 0.85, voice: ''};
+  mLen: 20, vLen: 20, vPersons: 'all', vTense: 'both', additions: false, theme: 'auto', vowels: 'marked', rate: 0.85, voice: ''};
 function loadState() {
   let s = null;
   try { s = JSON.parse(localStorage.getItem(KEY)); } catch (e) {}
@@ -224,6 +224,7 @@ const Combo = (() => {
 })();
 window.__Combo = Combo;
 window.__match = () => M;
+window.__verbs = () => V;
 
 /* =========================================================
    5. Speech
@@ -397,7 +398,7 @@ const Mark = (() => {
       const n = words.length;
       const h = words.filter(w => inTok.some(t => hit(t, w))).length;
       let v = 'miss';
-      if (n === 0) v = (aPers.size ? [...aPers].some(q => inPers.has(q)) : inTok.join(' ') === aTok.join(' ')) ? 'got' : 'miss';   // "And you?", "this"
+      if (n === 0) v = (aPers.size ? [...aPers].some(q => inPers.has(q)) : inTok.filter(w => w !== 'to').join(' ') === aTok.filter(w => w !== 'to').join(' ')) ? 'got' : 'miss';   // "And you?", "this"
       else if (n <= 2) v = h === n ? 'got' : h >= 1 && n === 2 ? 'almost' : 'miss';
       else v = h / n >= (n >= 5 ? .6 : .66) ? 'got' : h >= 1 && h / n >= .25 ? 'almost' : 'miss';
       // who it's about: "his name" typed for "your name"
@@ -780,21 +781,26 @@ const VERBS = window.VOCAB.verbs || [];
 const RA = window.VOCAB.ra || {};
 const SING = ['ana', 'nta', 'nti', 'houwa', 'hia'];
 const VCARDS = [];
-VERBS.forEach(v => PERSONS.forEach(([pid, pDz, pEn, subj, tag, pAlts = []]) => {
-  const form = v.forms[pid]; if (!form || !RA[pid]) return;
-  const parts = [pDz.toLowerCase(), RA[pid].toLowerCase(), form.toLowerCase()];             // pronoun + ra- + verb
-  const item = {key: `conj|${v.id}|${pid}`, topic: {id: 'verb-' + v.id, name: v.name, week: 0}, dz: parts.join(' '), parts,
+// present: pronoun + ra- + verb ("nta rak tekteb"); past: pronoun + verb ("nta mchit")
+['pres', 'past'].forEach(tense => VERBS.forEach(v => PERSONS.forEach(([pid, pDz, pEn, subj, tag, pAlts = []]) => {
+  const forms = tense === 'pres' ? v.forms : v.past, form = forms && forms[pid];
+  if (!form || (tense === 'pres' && !RA[pid])) return;
+  const parts = tense === 'pres' ? [pDz.toLowerCase(), RA[pid].toLowerCase(), form.toLowerCase()] : [pDz.toLowerCase(), form.toLowerCase()];
+  const key = `${tense === 'pres' ? 'conj' : 'conjp'}|${v.id}|${pid}`;
+  const item = {key, topic: {id: 'verb-' + v.id, name: v.name, week: 0}, dz: parts.join(' '), parts, tense,
     en: '', alt: '', ar: '', arPlain: '', x: false, u: false, verb: v, pid, pDz, pEn, pAlts};
-  // the English the way you'd say it: "you write (masc)", "she writes"
-  item.en = [subj || pEn, ['he', 'she'].includes(subj) ? (v.third || v.base) : (v.base || v.en), tag].filter(Boolean).join(' ');
+  // the English the way you'd say it: "you write (masc)", "she writes", "they walked"
+  const verbEn = tense === 'past' ? v.pastEn : ['he', 'she'].includes(subj) ? (v.third || v.base) : (v.base || v.en);
+  item.en = [subj || pEn, verbEn, tag].filter(Boolean).join(' ');
   const c = {id: item.key + '|conj', item, mode: 'conj'};
   VCARDS.push(c); CARD[c.id] = c;
-}));
+})));
 let V = null;
 S.set.vOff = S.set.vOff || [];
 function vEligible() {
   const ps = S.set.vPersons === 'sing' ? SING : S.set.vPersons === 'plur' ? PERSONS.map(p => p[0]).filter(p => !SING.includes(p)) : PERSONS.map(p => p[0]);
-  return VCARDS.filter(c => !S.set.vOff.includes(c.item.verb.id) && ps.includes(c.item.pid));
+  const tn = S.set.vTense || 'both';
+  return VCARDS.filter(c => !S.set.vOff.includes(c.item.verb.id) && ps.includes(c.item.pid) && (tn === 'both' || c.item.tense === tn));
 }
 function vPlan() {
   const t = now(), due = [], fresh = [];
@@ -803,7 +809,8 @@ function vPlan() {
 }
 function renderVerbSetup() {
   const p = vPlan(), n = Math.min(S.set.vLen, p.due.length + p.fresh.length);
-  $('vVerbs').innerHTML = VERBS.map(v => `<button class="chip" data-verb="${v.id}" aria-pressed="${!S.set.vOff.includes(v.id)}" type="button">${esc(v.name)} <small>${esc(v.en)}</small></button>`).join('');
+  const tn = S.set.vTense || 'both', hasT = v => (tn !== 'past' && v.forms) || (tn !== 'pres' && v.past);
+  $('vVerbs').innerHTML = VERBS.filter(hasT).map(v => `<button class="chip" data-verb="${v.id}" aria-pressed="${!S.set.vOff.includes(v.id)}" type="button">${esc(v.name)} <small>${esc(v.en)}</small></button>`).join('');
   $('vPlan').innerHTML = `<div><b>${p.due.length}</b><span>due now</span></div><div><b>${p.fresh.length}</b><span>not tried yet</span></div>`;
   $('vStart').disabled = !n;
   $('vStart').textContent = n ? `Start — ${n} forms` : 'All done for now. Come back later.';
@@ -827,10 +834,12 @@ function vCard() {
   $('vDeck').textContent = it.verb.deck;
   $('vBar').style.width = (V.i / V.q.length * 100) + '%';
   $('vMeta').innerHTML = (!S.cards[c.id] ? '<span class="tag acc">New</span>' : '') + (repeat ? '<span class="tag acc">Again</span>' : '') +
+    `<span class="tag">${it.tense === 'past' ? 'Past' : 'Present'}</span>` +
     (it.verb.gen ? '<span class="tag warn">Built from the slide formula</span>' : '');
   $('vVerb').innerHTML = `${digits(it.verb.name)} <span style="font-weight:400; font-size:.6em; color:var(--ink-2)">${esc(it.verb.en)}</span>`;
   $('vPerson').innerHTML = `<b>${esc(it.en)}</b>`;
   $('vInput').value = ''; $('vInput').disabled = false; $('vCheck').disabled = false;
+  $('vInput').placeholder = it.tense === 'past' ? 'pronoun  verb' : 'pronoun  ra-  verb';
   $('vResult').hidden = true;
   $('vInput').focus({preventScroll: true});
 }
@@ -846,19 +855,19 @@ function vCheck(e) {
   const val = $('vInput').value; if (!val.trim()) return;
   const it = V.q[V.i].c.item;
   V.answered = true;
-  // three parts: pronoun, ra- form, verb. Each must be there and right.
-  const got = val.trim().split(/\s+/), names = ['pronoun', 'ra- form', 'verb'];
+  // present has three parts (pronoun, ra- form, verb), past has two (pronoun, verb). Each must be there and right.
+  const N = it.parts.length, got = val.trim().split(/\s+/), names = N === 3 ? ['pronoun', 'ra- form', 'verb'] : ['pronoun', 'verb'];
   const opts = i => i === 0 ? [it.parts[0], ...it.pAlts] : [it.parts[i]];       // houwa / howa, hia / hiya…
-  const exact = got.length === 3 && got.every((g, i) => opts(i).some(o => vNorm(g) === vNorm(o)));
-  const loose = got.length === 3 && got.every((g, i) => opts(i).some(o => vLoose(g) === vLoose(o)));
-  const wrong = got.length === 3 ? names.filter((n, i) => !opts(i).some(o => vLoose(got[i]) === vLoose(o))) : null;
+  const exact = got.length === N && got.every((g, i) => opts(i).some(o => vNorm(g) === vNorm(o)));
+  const loose = got.length === N && got.every((g, i) => opts(i).some(o => vLoose(g) === vLoose(o)));
+  const wrong = got.length === N ? names.filter((n, i) => !opts(i).some(o => vLoose(got[i]) === vLoose(o))) : null;
   V.verdict = exact ? {v: 'got', msg: 'Right'}
     : loose ? {v: 'got', msg: `Right, spelt differently: the slides write ${it.dz}`}
-    : got.length !== 3 ? {v: 'miss', msg: `Needs all three parts — ${it.dz}`}
-    : {v: 'miss', msg: wrong.length === 3 ? `Not quite — ${it.dz}` : `Check the ${wrong.join(' and ')} — ${it.dz}`};
+    : got.length !== N ? {v: 'miss', msg: `Needs ${N === 3 ? 'all three parts' : 'both parts'} — ${it.dz}`}
+    : {v: 'miss', msg: wrong.length === N ? `Not quite — ${it.dz}` : `Check the ${wrong.join(' and ')} — ${it.dz}`};
   vShowVerdict();
-  $('vTable').innerHTML = VCARDS.filter(c => c.item.verb === it.verb).map(c => c.item).map(({pid, en: pEn, pDz}) =>
-    `<tr class="${pid === it.pid ? 'hit' : ''}"><td>${esc(pEn)}</td><td>${digits(pDz.toLowerCase())} ${digits(RA[pid].toLowerCase())} ${digits(it.verb.forms[pid].toLowerCase())}</td></tr>`).join('');
+  $('vTable').innerHTML = VCARDS.filter(c => c.item.verb === it.verb && c.item.tense === it.tense).map(c => c.item).map(({pid, en: pEn, dz}) =>
+    `<tr class="${pid === it.pid ? 'hit' : ''}"><td>${esc(pEn)}</td><td>${digits(dz)}</td></tr>`).join('');
   $('vInput').disabled = true; $('vCheck').disabled = true;
   $('vResult').hidden = false;
   $('vNext').focus({preventScroll: true});
@@ -897,7 +906,7 @@ function renderProgress() {
   if (!S.days[dayKey(d)]) d.setDate(d.getDate() - 1);    // today not done yet doesn't break it
   while (S.days[dayKey(d)]) { streak++; d.setDate(d.getDate() - 1); }
   const today = S.days[dayKey()] || {n: 0};
-  const seenItems = new Set(Object.keys(S.cards).filter(id => !id.startsWith('conj|')).map(id => id.split('|').slice(0, 2).join('|')));
+  const seenItems = new Set(Object.keys(S.cards).filter(id => !id.startsWith('conj')).map(id => id.split('|').slice(0, 2).join('|')));
   $('pStats').innerHTML =
     `<div class="stat"><b>${streak}</b><span>day streak</span></div>` +
     `<div class="stat"><b>${today.n}</b><span>reviewed today</span></div>` +
