@@ -58,6 +58,24 @@ Session options let you drill Present, Past or both. The data is in `vocab.js` (
   - Key forms only ("I" and "he"): *ybda*, *ynsa*, *ysalli*, *ykhalli*, *y7ab*, *y7al*, *yrad*, *ydir*, *y9is*, *ychouf*, *ydjouz*.
 - The pronoun accepts the slides' alternatives: *ntaya*, *ntiya*, *howa*, *hiya*.
 
+## My routine
+
+The Routine tab gives a day one line at a time, in order (wake up, pray, eat, go out, go to work, work, come back, sport or shopping, watch, sleep), and you write each whole line in Darja: "I wake up at 7:30 in the morning" → *nnoud 3la sab3a w nos ta3 sba7*.
+
+- **Every session is a new day.** Each step picks one of a few line templates, the times change, and some lines start with *oumba3d* ("Then…").
+- **Tense:** Present (a normal day), Past (yesterday) or Either (one tense per day, picked at random).
+- **Nouns are given** in Darja in the prompt (work → *khedma*). They aren't from the slides; they're there so the verbs and joining words can be tested in context.
+- **Times** can be in words (*sab3a w nos*, *setta ghir rbe3*) or digits (7:30). The word forms follow the Time deck: *w* up to the half hour, then *ghir* (or *9al*) from the next hour.
+- **Marking:**
+  - The whole line is matched with spacing ignored, so *lkhedma* and *l khedma* are both fine. Spelling is loose, as in Verbs.
+  - **Right:** the whole line matches.
+  - **Almost:** the verb and joining words are right, but the time or a noun is off.
+  - **Missed:** names what to check ("Check the verb (nnoud) and the joining word “3la”").
+  - A model answer is shown with the verb and joining words highlighted, and anything wrong underlined.
+- **I-forms:** the slides give only *nakhdem*, *ndir*, *nedt*, *sallit*, *klit* and *dert* for "I". The rest are built with the slide formulas (n- + stem for the present; the past-deck endings for the past) and tagged "Built from the slide formula".
+- Lines count towards today's reviews. They aren't scheduled into boxes, because every day is new. The end of a day lists all the lines and lets you redo the missed ones.
+- The data is in `vocab.js` under `VOCAB.routine`: `verbs`, `nouns`, `times` and `lines`. The topics *My routine: verbs* and *My routine: joining words* put the same words into Drill, Listen and Match.
+
 ## In-session repeats
 
 In Drill and Listen, a missed card comes back 8 cards later and an "Almost" 12 cards later, each at most twice. Longer gaps between attempts give better long-term recall (Pyc & Rawson, 2009).
@@ -89,6 +107,7 @@ In `vocab.js`, add a topic block at the end of `topics`:
 - Each item is `[darja, english, arabic, alt, flags]`.
   - In the English, ` — ` or ` · ` separates accepted answers. `— to a man` / `— to a woman` shows who the question is addressed to.
   - Arabic must be vowel-marked. **Always put the shadda (ّ) on doubled letters.** Without it the voice can pick the wrong word; for example, unmarked عمي can be read as "blind" instead of "my uncle".
+  - A note in brackets that isn't (m), (f), (masc), (fem) or (plural) is a hint: "with (a person)" also accepts plain "with" in Listen.
   - Flags: `x` means not from the slides, `u` means the Arabic spelling is unsure (listed in Settings for the teacher to check).
 - Change `updated:` to today's date.
 - Existing progress is kept. New topics are switched on automatically on every device.

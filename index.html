@@ -28,6 +28,7 @@
     <button data-tab="listen" aria-current="false" type="button"><svg viewBox="0 0 24 24"><path d="M5 10v4h3l4 4V6L8 10H5z"/><path d="M16 9a4 4 0 0 1 0 6M18.5 6.5a8 8 0 0 1 0 11"/></svg>Listen</button>
     <button data-tab="match" aria-current="false" type="button"><svg viewBox="0 0 24 24"><rect x="3.5" y="5" width="7" height="5" rx="1.5"/><rect x="13.5" y="14" width="7" height="5" rx="1.5"/><path d="M10.5 7.5h2a2 2 0 0 1 2 2v4.5"/></svg>Match</button>
     <button data-tab="verbs" aria-current="false" type="button"><svg viewBox="0 0 24 24"><path d="M5 6h9M5 12h14M5 18h7"/><path d="M17 4l3 3-3 3"/></svg>Verbs</button>
+    <button data-tab="routine" aria-current="false" type="button"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8"/><path d="M12 7.5V12l3 2"/></svg>Routine</button>
     <button data-tab="progress" aria-current="false" type="button"><svg viewBox="0 0 24 24"><path d="M5 19V11M12 19V5M19 19v-6"/></svg>Progress</button>
     <button data-tab="settings" aria-current="false" type="button"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M12 3v3M12 18v3M3 12h3M18 12h3M5.6 5.6l2.1 2.1M16.3 16.3l2.1 2.1M5.6 18.4l2.1-2.1M16.3 7.7l2.1-2.1"/></svg>Settings</button>
   </nav>
@@ -238,6 +239,52 @@
     </div>
 
     <div id="vDone" class="panel pad stack" hidden></div>
+  </section>
+
+  <!-- ================= MY ROUTINE ================= -->
+  <section id="tab-routine" hidden>
+    <div id="rSetup" class="panel pad stack">
+      <div>
+        <h2>Tell your day</h2>
+        <p class="muted">A day comes one line at a time, in order, with new times each session. Write each line in Darja. The nouns are given in Darja in the prompt. You're marked on the verbs and joining words. Times can be in words (<i>sab3a w nos</i>) or digits (7:30).</p>
+      </div>
+      <button class="go" id="rStart" type="button">Start a day</button>
+      <details class="details">
+        <summary>Session options</summary>
+        <div class="stack" style="margin-top:16px">
+          <div><p class="label">Tense</p>
+            <div class="seg" data-setting="rTense">
+              <button data-v="pres" type="button">Present</button><button data-v="past" type="button">Past</button><button data-v="both" type="button">Either</button>
+            </div>
+            <p class="hint" style="margin-top:8px">Either picks one tense per day: a normal day (present) or yesterday (past).</p></div>
+        </div>
+      </details>
+    </div>
+
+    <div id="rRun" hidden>
+      <div class="drillhead"><span class="count" id="rCount"></span><span id="rDeck"></span></div>
+      <div class="bar"><i id="rBar"></i></div>
+      <div class="panel flash">
+        <div class="meta" id="rMeta"></div>
+        <p class="rprompt" id="rPrompt"></p>
+        <form id="rForm" class="row" autocomplete="off">
+          <input id="rInput" type="text" placeholder="the whole line in Darja" aria-label="Your answer" style="flex:1 1 260px" autocapitalize="off" autocorrect="off" spellcheck="false">
+          <button class="go" id="rCheck" type="submit">Check <kbd>enter</kbd></button>
+        </form>
+        <div id="rResult" class="stack" hidden style="gap:12px">
+          <p class="verdict" id="rVerdict"></p>
+          <p class="rmodel" id="rModel"></p>
+          <div class="row">
+            <button class="go" id="rNext" type="button">Next <kbd>enter</kbd></button>
+            <button class="ghost" id="rOverride" type="button">I was right — count it</button>
+          </div>
+        </div>
+      </div>
+      <div class="panel pad stack rsofar" id="rSoFarBox" hidden><p class="label" style="margin:0">Your day so far</p><ol class="rlist" id="rSoFar"></ol></div>
+      <p style="margin-top:14px"><button class="linkish" id="rEnd" type="button">End session</button></p>
+    </div>
+
+    <div id="rDone" class="panel pad stack" hidden></div>
   </section>
 
   <!-- ================= PROGRESS ================= -->

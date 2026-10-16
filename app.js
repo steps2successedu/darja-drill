@@ -28,7 +28,7 @@ const CARD = Object.fromEntries(CARDS.map(c => [c.id, c]));
    ========================================================= */
 const KEY = 'darja-drill-v1';
 const DEFAULTS = {dir: 'both', len: 20, newCap: 10, lLen: 20, lNewCap: 10, topics: TOPICS.map(t => t.id),
-  mLen: 20, vLen: 20, vPersons: 'all', vTense: 'both', additions: false, theme: 'auto', vowels: 'marked', rate: 0.85, voice: ''};
+  mLen: 20, vLen: 20, vPersons: 'all', vTense: 'both', rTense: 'both', additions: false, theme: 'auto', vowels: 'marked', rate: 0.85, voice: ''};
 function loadState() {
   let s = null;
   try { s = JSON.parse(localStorage.getItem(KEY)); } catch (e) {}
@@ -326,7 +326,9 @@ const Mark = (() => {
   const content = toks => [...new Set(toks.filter(w => !STOP.has(w) && !PRON[w]).map(stem))];
   function alternatives(en) {
     const segs = en.split(/\s+[—·\/]\s+/).map(s => s.trim()).filter(s => s && !/^(to )?an? (man|woman)$/i.test(s));
-    return segs.concat(EXTRA[en] || []);
+    // a note in brackets ("with (a person)", "to do (sport)") is a hint, so the bare word counts too; (m) / (f) / (plural) stay required
+    const bare = segs.filter(x => /\((?!(m|f|masc|fem|plural)\))[^)]+\)/.test(x)).map(x => x.replace(/\s*\((?!(m|f|masc|fem|plural)\))[^)]+\)/g, '').trim()).filter(Boolean);
+    return segs.concat(bare, EXTRA[en] || []);
   }
   // every content word in the bank, stemmed — typos must be closest to the intended word
   const KNOWN = new Set();
@@ -897,6 +899,185 @@ function vFinish() {
 }
 
 /* =========================================================
+   8d. My routine — translate a day, line by line
+   ========================================================= */
+// Lines come from VOCAB.routine templates. Each line is a list of segments
+// (verb, joining word, noun, time, other slide word). The answer is right when
+// the whole line matches (spacing ignored), and the feedback names the segments that are off.
+const RT = window.VOCAB.routine || null;
+const R_CONN = ['w', 'm3a', 'b', 'bla', 'oumba3d', 'ta3', 'fi', 'l', 'men', '7etta', '3la'];
+const Routine = (() => {
+  if (!RT) return null;
+  const rLoose = x => vLoose(x).replace(/U/g, '');      // ou/u dropped too: rou7t = ro7t
+  const NUMW = {};
+  (TOPICS.find(t => t.id === 'numbers') || {items: []}).items.forEach(([dz, en]) => {
+    if (/^\d+$/.test(en) && +en <= 20) NUMW[+en] = dz.split(' · ')[0].split(' / ')[0].toLowerCase();
+  });
+  const rnd = (a, b) => a + Math.floor(Math.random() * (b - a + 1));
+  const pickOne = a => a[Math.floor(Math.random() * a.length)];
+  const MINS = [0, 0, 15, 30, 30, 45, 10, 20, 40, 50, 5];
+  // clock time → {show:'7:30', dz:'sab3a w nos', alts:[…]}
+  function clock(h, m) {
+    const show = m ? `${h}:${String(m).padStart(2, '0')}` : String(h);
+    const past = m <= 30, hh = past ? h : h % 12 + 1, hw = NUMW[hh];
+    const mw = {5: [NUMW[5]], 10: [NUMW[10]], 15: ['rbe3', 'rba3'], 20: [NUMW[20]], 30: ['nos', 'nes'],
+      40: [NUMW[20]], 45: ['rbe3', 'rba3'], 50: [NUMW[10]]}[m];
+    const links = past ? ['w'] : ['ghir', '9al'];
+    const hours = [hw, 'l' + hw, 'le' + hw];
+    const alts = [];
+    hours.forEach(x => { if (!m) alts.push(x); else links.forEach(l => mw.forEach(w => alts.push(`${x} ${l} ${w}`))); });
+    alts.push(show, show.replace(':', '.'), show.replace(':', 'h'));
+    return {show, dz: m ? `${hw} ${links[0]} ${mw[0]}` : hw, alts};
+  }
+  function build(tpl, tense, then) {
+    const ti = tense === 'past' ? 1 : 0, segs = [], vs = [], ts = [], ns = [], gens = [];
+    tpl.dz.split(' ').forEach(tok => {
+      let m;
+      if ((m = tok.match(/^\{V:(\w+)\}$/))) {
+        const v = RT.verbs[m[1]], f = v[tense];
+        segs.push({k: 'verb', dz: f, alts: [f]}); vs.push(v.en[ti]);
+        if ((v.gen || []).includes(tense)) gens.push(f);
+      } else if ((m = tok.match(/^\{([TH]):(\w+)\}$/))) {
+        const [a, b] = RT.times[m[2]], c = clock(rnd(a, b), m[1] === 'H' ? 0 : pickOne(MINS));
+        segs.push({k: 'time', dz: c.dz, alts: c.alts}); ts.push(c.show);
+      } else if ((m = tok.match(/^\{N:(\w+)\}$/))) {
+        const [d, e, al = []] = RT.nouns[m[1]];
+        segs.push({k: 'noun', dz: d, alts: [d, ...al]}); ns.push([e, d]);
+      } else {
+        segs.push({k: R_CONN.includes(tok) ? 'conn' : 'word', dz: tok, alts: [tok, ...(RT.alts[tok] || [])]});
+      }
+    });
+    let en = tpl.en.replace(/\{V\}/g, () => vs.shift()).replace(/\{[TH]\}/g, () => ts.shift());
+    const enHTML = esc(en).replace(/\{N\}/g, () => { const [e, d] = ns.shift(); return `<span class="noun">${esc(e)}<b>${esc(d)}</b></span>`; });
+    if (then) { segs.unshift({k: 'conn', dz: 'oumba3d', alts: ['oumba3d', ...RT.alts.oumba3d]}); }
+    return {segs, tense, gens, enHTML: (then ? 'Then ' : '') + enHTML, dz: segs.map(s => s.dz).join(' ')};
+  }
+  function day(tense) {
+    const os = [...new Set(RT.lines.map(l => l.o))].sort((a, b) => a - b), first = os[0], last = os[os.length - 1];
+    return os.map(o => {
+      const tpl = pickOne(RT.lines.filter(l => l.o === o));
+      const then = o !== first && o !== last && /^\{V/.test(tpl.dz) && Math.random() < .35;
+      return build(tpl, tense, then);
+    });
+  }
+  // does the input spell exactly this sequence of segments? spacing ignored
+  function fits(input, segs, fn) {
+    const str = fn(input);
+    let pos = new Set([0]);
+    for (const sg of segs) {
+      const nx = new Set(), alts = sg.alts.map(fn);
+      pos.forEach(p => alts.forEach(a => {
+        if (!a) { nx.add(p); return; }
+        if (str.startsWith(a, p)) nx.add(p + a.length);
+        else if (p > 0 && str[p - 1] === a[0] && str.startsWith(a.slice(1), p)) nx.add(p + a.length - 1);   // "ta3 3chiya" said as one sound
+      }));
+      pos = nx; if (!pos.size) return false;
+    }
+    return pos.has(str.length);
+  }
+  // which segments can't be found in the answer
+  function missing(input, segs) {
+    const toks = input.trim().split(/\s+/).map(rLoose).filter(Boolean), joined = toks.join('');
+    return segs.map((sg, i) => {
+      const alts = sg.alts.map(rLoose), next = segs[i + 1], prev = segs[i - 1];
+      const found = alts.some(a => toks.includes(a) ||
+        ((sg.k === 'time' || /\s/.test(sg.alts[0])) && joined.includes(a)) ||
+        (next && next.alts.map(rLoose).some(b => toks.includes(a + b))) ||       // "lkhedma" for "l khedma"
+        (prev && prev.alts.map(rLoose).some(b => toks.includes(b + a))));
+      return found ? null : i;
+    }).filter(i => i !== null);
+  }
+  function check(input, line) {
+    const {segs} = line;
+    if (fits(input, segs, vNorm)) return {v: 'got', msg: 'Right', bad: []};
+    if (fits(input, segs, rLoose)) return {v: 'got', msg: 'Right, spelt differently', bad: []};
+    const bad = missing(input, segs), key = bad.filter(i => ['verb', 'conn'].includes(segs[i].k));
+    const name = i => segs[i].k === 'verb' ? `the verb (${segs[i].dz})` : segs[i].k === 'conn' ? `the joining word “${segs[i].dz}”`
+      : segs[i].k === 'time' ? 'the time' : segs[i].k === 'noun' ? `the noun (${segs[i].dz})` : `“${segs[i].dz}”`;
+    const list = a => a.length < 2 ? a.join('') : a.slice(0, -1).join(', ') + ' and ' + a[a.length - 1];
+    if (!bad.length) return {v: 'miss', msg: 'Every part is there, but check the word order', bad};
+    if (bad.length >= segs.length - 1) return {v: 'miss', msg: 'Not quite. Here is the line:', bad};
+    if (!key.length) return {v: 'almost', msg: `Verb and joining words right. Check ${list(bad.map(name))}`, bad};
+    return {v: 'miss', msg: `Check ${list(bad.map(name))}`, bad};
+  }
+  return {day, check, build, clock, fits};
+})();
+window.__Routine = Routine;
+
+let R = null;
+function rStart(lines, redo) {
+  R = {lines, i: 0, first: [], redo: !!redo};
+  $('rSetup').hidden = true; $('rDone').hidden = true; $('rRun').hidden = false;
+  rCard();
+}
+function rCard() {
+  if (R.i >= R.lines.length) return rFinish();
+  const ln = R.lines[R.i];
+  Object.assign(R, {answered: false, verdict: null});
+  $('rCount').textContent = `${R.i + 1} / ${R.lines.length}`;
+  $('rDeck').textContent = ln.tense === 'past' ? 'Yesterday' : 'A normal day';
+  $('rBar').style.width = (R.i / R.lines.length * 100) + '%';
+  $('rMeta').innerHTML = `<span class="tag">${ln.tense === 'past' ? 'Past' : 'Present'}</span>` +
+    (ln.gens.length ? `<span class="tag warn">${esc(ln.gens.join(', '))}: built from the slide formula</span>` : '');
+  $('rPrompt').innerHTML = ln.enHTML;
+  $('rInput').value = ''; $('rInput').disabled = false; $('rCheck').disabled = false;
+  $('rResult').hidden = true;
+  const done = R.redo ? [] : R.lines.slice(0, R.i);
+  $('rSoFarBox').hidden = !done.length;
+  $('rSoFar').innerHTML = done.map(l => `<li>${digits(l.dz)}</li>`).join('');
+  $('rInput').focus({preventScroll: true});
+}
+function rModelHTML(ln, bad) {
+  return ln.segs.map((s, i) => `<span class="${bad.includes(i) ? 'rx' : s.k === 'verb' ? 'rv' : s.k === 'conn' ? 'rc' : ''}">${digits(s.dz)}</span>`).join(' ');
+}
+function rCheck(e) {
+  e.preventDefault();
+  if (!R || R.answered) return;
+  const val = $('rInput').value; if (!val.trim()) return;
+  const ln = R.lines[R.i];
+  R.answered = true; R.input = val;
+  R.verdict = Routine.check(val, ln);
+  rShowVerdict();
+  $('rModel').innerHTML = rModelHTML(ln, R.verdict.bad);
+  $('rInput').disabled = true; $('rCheck').disabled = true;
+  $('rResult').hidden = false;
+  $('rNext').focus({preventScroll: true});
+}
+function rShowVerdict() {
+  const {v, msg} = R.verdict, el = $('rVerdict');
+  el.textContent = msg; el.style.color = v === 'got' ? 'var(--good)' : v === 'almost' ? 'var(--almost)' : 'var(--miss)';
+  $('rOverride').hidden = v === 'got';
+}
+function rNext() {
+  if (!R || !R.answered) return;
+  const g = R.verdict.v, k = dayKey(), d = S.days[k] || {n: 0, ok: 0};
+  d.n++; if (g === 'got') d.ok++; S.days[k] = d; save(); Sync.soon();
+  R.first.push({ln: R.lines[R.i], g, input: R.input});
+  R.i++; rCard();
+}
+function rFinish() {
+  const f = R.first, weak = f.filter(x => x.g !== 'got');
+  $('rRun').hidden = true; $('rDone').hidden = false;
+  $('rDone').innerHTML = `<h2>Day done</h2>
+    <div class="tally">
+      <div class="t-got"><b>${f.filter(x => x.g === 'got').length}</b><span>right</span></div>
+      <div class="t-almost"><b>${f.filter(x => x.g === 'almost').length}</b><span>almost</span></div>
+      <div class="t-miss"><b>${f.filter(x => x.g === 'miss').length}</b><span>missed</span></div>
+    </div>
+    ${f.length ? `<p class="label" style="margin:0">The whole day</p><ol class="rlist rdone">${f.map(x =>
+      `<li><span class="d" style="color:${x.g === 'got' ? 'var(--good)' : x.g === 'almost' ? 'var(--almost)' : 'var(--miss)'}">${digits(x.ln.dz)}</span>${x.g !== 'got' ? `<span class="e">You wrote: ${esc(x.input)}</span>` : ''}</li>`).join('')}</ol>` : ''}
+    <div class="row">${weak.length ? `<button class="go" id="rAgain" type="button">Redo the ${weak.length === 1 ? 'missed line' : weak.length + ' missed lines'}</button>` : ''}
+      <button class="ghost" data-back type="button">Back</button></div>`;
+  const again = $('rAgain');
+  if (again) again.onclick = () => rStart(weak.map(x => x.ln), true);
+  Sync.now();
+}
+function rNewDay() {
+  const t = S.set.rTense === 'both' || !S.set.rTense ? (Math.random() < .5 ? 'pres' : 'past') : S.set.rTense;
+  rStart(Routine.day(t));
+}
+
+/* =========================================================
    9. Progress
    ========================================================= */
 let pMode = 'speak';
@@ -1063,7 +1244,7 @@ let tab = 'drill';
 function showTab(t) {
   tab = t;
   document.querySelectorAll('nav.tabs button').forEach(b => b.setAttribute('aria-current', String(b.dataset.tab === t)));
-  ['drill', 'listen', 'match', 'verbs', 'progress', 'settings'].forEach(x => $('tab-' + x).hidden = x !== t);
+  ['drill', 'listen', 'match', 'verbs', 'routine', 'progress', 'settings'].forEach(x => $('tab-' + x).hidden = x !== t);
   if (t !== 'listen') Voice.stop();
   refreshVisible();
   window.scrollTo({top: 0});
@@ -1077,9 +1258,9 @@ function refreshVisible() {
   if (tab === 'settings') renderSettings();
 }
 function backToSetup() {
-  D = null; L = null; M = null; V = null; Voice.stop();
-  ['dRun', 'dDone', 'lRun', 'lDone', 'mRun', 'mDone', 'vRun', 'vDone'].forEach(id => $(id).hidden = true);
-  $('dSetup').hidden = false; $('lSetup').hidden = false; $('mSetup').hidden = false; $('vSetup').hidden = false;
+  D = null; L = null; M = null; V = null; R = null; Voice.stop();
+  ['dRun', 'dDone', 'lRun', 'lDone', 'mRun', 'mDone', 'vRun', 'vDone', 'rRun', 'rDone'].forEach(id => $(id).hidden = true);
+  $('dSetup').hidden = false; $('lSetup').hidden = false; $('mSetup').hidden = false; $('vSetup').hidden = false; $('rSetup').hidden = false;
   refreshVisible();
 }
 
@@ -1126,6 +1307,11 @@ $('vForm').addEventListener('submit', vCheck);
 $('vNext').onclick = vNext;
 $('vOverride').onclick = () => { if (V && V.answered) { V.verdict = {v: 'got', msg: 'Counted as right'}; vShowVerdict(); } };
 $('vEnd').onclick = () => { if (V) { V.q = V.q.slice(0, V.i); vFinish(); } };
+$('rStart').onclick = () => { if (Routine) rNewDay(); };
+$('rForm').addEventListener('submit', rCheck);
+$('rNext').onclick = rNext;
+$('rOverride').onclick = () => { if (R && R.answered) { R.verdict = {v: 'got', msg: 'Counted as right', bad: []}; rShowVerdict(); $('rModel').innerHTML = rModelHTML(R.lines[R.i], []); } };
+$('rEnd').onclick = () => { if (R) { R.lines = R.lines.slice(0, R.i); rFinish(); } };
 $('vVerbs').addEventListener('click', e => {
   const b = e.target.closest('[data-verb]'); if (!b) return;
   const id = b.dataset.verb, off = S.set.vOff;
@@ -1205,6 +1391,7 @@ document.addEventListener('keydown', e => {
   if (e.target.closest('input, select, textarea')) {
     if (tab === 'listen' && L && L.answered && e.key === 'Enter') { e.preventDefault(); lNext(); }
     if (tab === 'verbs' && V && V.answered && e.key === 'Enter') { e.preventDefault(); vNext(); }
+    if (tab === 'routine' && R && R.answered && e.key === 'Enter') { e.preventDefault(); rNext(); }
     return;
   }
   if (tab === 'drill' && D && !$('dRun').hidden) {
@@ -1214,6 +1401,7 @@ document.addEventListener('keydown', e => {
     if (e.key === '3') dGrade('got');
   }
   if (tab === 'verbs' && V && V.answered && !$('vRun').hidden && (e.key === 'r' || e.key === 'R') && !$('vOverride').hidden) { $('vOverride').click(); return; }
+  if (tab === 'routine' && R && R.answered && !$('rRun').hidden && (e.key === 'r' || e.key === 'R') && !$('rOverride').hidden) { $('rOverride').click(); return; }
   if (tab === 'match' && M && !$('mRun').hidden && /^[1-8]$/.test(e.key) && !e.altKey && !e.ctrlKey && !e.metaKey) { mPick(+e.key - 1); return; }
   if (tab === 'listen' && L && !$('lRun').hidden) {
     if (!e.altKey && !e.ctrlKey && !e.metaKey && !e.repeat && /^Key[PSHR]$/.test(e.code)) { e.preventDefault(); listenKey(e.code); }

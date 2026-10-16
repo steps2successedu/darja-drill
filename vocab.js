@@ -15,7 +15,7 @@
   next number, and paste the new items in. Nothing else needs to change.
 */
 window.VOCAB = {
-updated: '2026-10-15',
+updated: '2026-10-16',
 topics: [
 {id:'questions', name:'Questions', week:1, deck:'Deck 1', items:[
   ['Wech rak?', 'How are you? — to a man', 'وَاشْ رَاكْ؟', 'Ki rak? · Labas?'],
@@ -349,6 +349,32 @@ topics: [
   ['Yzour', 'to visit', 'يْزُورْ'],
   ['Y9oul', 'to say', 'يْقُولْ'],
   ['Ydjouz', 'to pass', 'يْجُوزْ']
+]},
+{id:'routine-verbs', name:'My routine: verbs', week:10, deck:'Verbs: routine', items:[
+  ['Ynoud', 'to get up · to wake up', 'يْنُوضْ'],
+  ['Ytwadda', 'to perform ablutions', 'يْتْوَضَّا', '', 'u'],
+  ['Ysalli', 'to pray', 'يْصَلِّي'],
+  ['Yakoul', 'to eat', 'يَاكُلْ'],
+  ['Ykhrej', 'to go out', 'يَخْرَجْ'],
+  ['Yro7', 'to go', 'يْرُوحْ'],
+  ['Ykhdem', 'to work', 'يَخْدَمْ'],
+  ['Ywli', 'to return · to come back', 'يْوَلِّي', '', 'u'],
+  ['Ydir', 'to do (sport)', 'يْدِيرْ'],
+  ['Ychri', 'to buy', 'يَشْرِي'],
+  ['Ytfaredj', 'to watch', 'يْتْفَرَّجْ'],
+  ['Yrgod', 'to sleep', 'يَرْقُدْ', '', 'u']
+]},
+{id:'routine-joining', name:'My routine: joining words', week:10, deck:'Verbs: routine', items:[
+  ['W', 'and', 'وْ'],
+  ['M3a', 'with (a person)', 'مْعَا'],
+  ['B', 'with · by (a tool or a means)', 'بْ'],
+  ['Bla', 'without', 'بْلَا'],
+  ['Oumba3d', 'then · afterwards · later', 'وْمْبَعْدْ', '', 'u'],
+  ['Ta3', 'of · belonging to', 'تَاعْ'],
+  ['Fi', 'in', 'فِي'],
+  ['L', 'to (a place)', 'لْ'],
+  ['Men … 7etta', 'from … to', 'مَنْ … حَتَّى'],
+  ['3la', 'at (a time)', 'عْلَى']
 ]}
 ]
 };
@@ -396,3 +422,58 @@ window.VOCAB.verbs = [
   {id:'p-chaf', name:'Ychouf', en:'to see', deck:'Verbs in the Past Tense', pastEn:'saw', past:{ana:'Chouft', houwa:'Chaf'}},
   {id:'p-djaz', name:'Ydjouz', en:'to pass', deck:'Verbs in the Past Tense', pastEn:'passed', past:{ana:'Djouzt', houwa:'Djaz'}}
 ];
+
+/*
+  My routine tab. A day is built line by line from these templates, in order (o), with fresh times each session.
+  dz template tokens: {V:id} verb in the chosen tense, {T:range} clock time in words, {H:range} hour only,
+  {N:id} noun (its Darja is shown in the prompt), anything else is a slide word (joining words, ta3 sba7…).
+  Verb forms: pres = I-form present, past = I-form past. gen lists the forms built with the slide formula
+  (the slides only give nakhdem, ndir, nedt, sallit, klit and dert for "I").
+*/
+window.VOCAB.routine = {
+  verbs: {
+    noud:    {he:'Ynoud',    pres:'nnoud',    past:'nedt',      en:['wake up', 'woke up'],                       gen:['pres']},
+    twadda:  {he:'Ytwadda',  pres:'ntwadda',  past:'twaddit',   en:['perform ablutions', 'performed ablutions'], gen:['pres', 'past']},
+    salli:   {he:'Ysalli',   pres:'nsalli',   past:'sallit',    en:['pray', 'prayed'],                           gen:['pres']},
+    akoul:   {he:'Yakoul',   pres:'nakoul',   past:'klit',      en:['eat', 'ate'],                               gen:['pres']},
+    khrej:   {he:'Ykhrej',   pres:'nakhrej',  past:'khrejt',    en:['go out', 'went out'],                       gen:['pres', 'past']},
+    ro7:     {he:'Yro7',     pres:'nro7',     past:'ro7t',      en:['go', 'went'],                               gen:['pres', 'past']},
+    khdem:   {he:'Ykhdem',   pres:'nakhdem',  past:'khdemt',    en:['work', 'worked'],                           gen:['past']},
+    wli:     {he:'Ywli',     pres:'nwli',     past:'wlit',      en:['come back', 'came back'],                   gen:['pres', 'past']},
+    dir:     {he:'Ydir',     pres:'ndir',     past:'dert',      en:['do', 'did'],                                gen:[]},
+    chri:    {he:'Ychri',    pres:'nchri',    past:'chrit',     en:['buy', 'bought'],                            gen:['pres', 'past']},
+    tfaredj: {he:'Ytfaredj', pres:'ntfaredj', past:'tfaredjt',  en:['watch', 'watched'],                         gen:['pres', 'past']},
+    rgod:    {he:'Yrgod',    pres:'nergod',   past:'rgodt',     en:['go to sleep', 'went to sleep'],             gen:['pres', 'past']}
+  },
+  // [Darja shown in the prompt, English, other accepted spellings]. Not from the slides unless noted.
+  nouns: {
+    khedma:['khedma', 'work'], dar:['dar', 'home', ['ddar']], jame3:['jame3', 'the mosque', ['ljame3']],
+    tonobil:['tonobil', 'car', ['ttonobil', 'tomobil']], sa7bi:['sa7bi', 'my friend'], khobz:['khobz', 'bread', ['lkhobz']],
+    ftour:['ftour', 'breakfast', ['lftour']], film:['film', 'a film', ['lfilm']], sport:['sport', 'sport'],
+    '7anout':['7anout', 'the shop', ['l7anout']],
+    mama:['mama', 'my mum', ['yemma']], baba:['baba', 'my dad', ['bouya']], khouya:['khouya', 'my brother'], khti:['khti', 'my sister']
+  },
+  // times: [first hour, last hour] on a 12-hour clock
+  times: {am:[5, 6], out:[7, 8], start:[7, 9], end:[2, 4], pm:[5, 6], night:[9, 11]},
+  lines: [
+    {o:1, en:'I {V} at {T} in the morning', dz:'{V:noud} 3la {T:am} ta3 sba7'},
+    {o:2, en:'I {V} and {V}', dz:'{V:twadda} w {V:salli}'},
+    {o:2, en:'I {V} in {N}', dz:'{V:salli} fi {N:jame3}'},
+    {o:3, en:'I {V} {N} with {N}', dz:'{V:akoul} {N:ftour} m3a {N:mama}'},
+    {o:3, en:'I {V} {N} with {N}', dz:'{V:akoul} {N:khobz} m3a {N:khouya}'},
+    {o:4, en:'I {V} at {T} in the morning', dz:'{V:khrej} 3la {T:out} ta3 sba7'},
+    {o:4, en:'I {V} with {N}', dz:'{V:khrej} m3a {N:khouya}'},
+    {o:5, en:'I {V} to {N} by {N}', dz:'{V:ro7} l {N:khedma} b {N:tonobil}'},
+    {o:5, en:'I {V} to {N} with {N}', dz:'{V:ro7} l {N:khedma} m3a {N:sa7bi}'},
+    {o:5, en:'I {V} to {N} without {N}', dz:'{V:ro7} l {N:khedma} bla {N:tonobil}'},
+    {o:6, en:'I {V} from {H} to {H}', dz:'{V:khdem} men {H:start} 7etta {H:end}'},
+    {o:7, en:'I {V} {N} at {T} in the afternoon', dz:'{V:wli} l {N:dar} 3la {T:pm} ta3 3chiya'},
+    {o:8, en:'I {V} {N} with {N}', dz:'{V:dir} {N:sport} m3a {N:khouya}'},
+    {o:8, en:'I {V} {N} in {N}', dz:'{V:chri} {N:khobz} fi {N:7anout}'},
+    {o:9, en:'I {V} {N} with {N}', dz:'{V:tfaredj} {N:film} m3a {N:khti}'},
+    {o:9, en:'I {V} and {V} {N}', dz:'{V:akoul} w {V:tfaredj} {N:film}'},
+    {o:10, en:'I {V} at {T} at night', dz:'{V:rgod} 3la {T:night} ta3 lil'}
+  ],
+  // other accepted spellings of the slide words used above
+  alts: {w:['ou'], b:['bel', 'bl'], fi:['f', 'fel'], l:['el', 'lel', 'li'], oumba3d:['ba3d', 'mba3d'], m3a:['ma3a'], '7etta':['7ata', 'hatta'], sba7:['sbah'], '3chiya':['la3chiya'], lil:['llil']}
+};
