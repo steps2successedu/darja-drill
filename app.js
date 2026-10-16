@@ -669,7 +669,7 @@ function renderMatchSetup() {
   $('mPlan').innerHTML = `<div><b>${all.length}${p.combos ? '+' : ''}</b><span>in play${p.combos ? ' + combos' : ''}</span></div><div><b>${passed}</b><span>passed both ways</span></div><div><b>${flagged}</b><span>to revisit</span></div>`;
   const ok = p.words.length >= 8 || p.nums.length >= 8 || p.money.length >= 8 || p.combos;
   $('mStart').disabled = !ok;
-  $('mStart').textContent = ok ? `Start — ${S.set.mLen} questions` : 'Pick some topics in the options.';
+  $('mStart').textContent = ok ? `Start — ${S.set.mLen} questions` : all.length ? `Needs 8 words for the 8 options (${all.length} picked). Add a topic.` : 'Pick some topics in the options.';
 }
 function mStart(queue) {
   M = {q: queue, i: 0, first: {}, again: {}, pool: matchPool()};
