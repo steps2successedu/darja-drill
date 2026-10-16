@@ -92,6 +92,10 @@ The **Number combos** topic chip (off by default) makes fresh numbers every sess
 
 For 11–19 thousand it follows the slides: *7dach nalef* on its own, and *Hdach alf w…* inside a longer number (as in 11,542). Forms the slides don't show are skipped. Combos aren't scheduled into boxes, because they're new every time. They still count towards today's reviews, and a miss comes back later in the session.
 
+## All verbs
+
+The **All verbs** topic has every verb so far in its dictionary form (the he-form: *yakoul*, to eat), matching the Notebook's "Every verb so far" list. It's for knowing the verbs themselves, without conjugating, in Drill, Listen and Match. The Present verbs, Past verbs and My routine: verbs topics stay as they are, so some verbs are in two topics. A word that's in two topics counts as one word: it's never asked twice in a session, and Match never offers it as its own wrong option.
+
 ## Adding a new week of vocab
 
 In `vocab.js`, add a topic block at the end of `topics`:

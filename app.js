@@ -69,6 +69,8 @@ function plan(modes) {
   eligible(modes).forEach(c => { const s = S.cards[c.id]; if (!s) fresh.push(c); else if (s.due <= t) due.push(c); });
   return {due, fresh};
 }
+// the same word in two topics (Ysalli in Past verbs and All verbs) counts as one word, so it isn't asked twice in a session
+const wordId = it => it.dz.toLowerCase().split(' · ')[0].replace(/[^a-z0-9]/g, '').replace(/e/g, '');
 function roundRobin(list, limit, used, score) {
   const groups = {};
   list.forEach(c => { c._s = score(c); (groups[c.item.topic.id] ||= []).push(c); });
@@ -79,8 +81,8 @@ function roundRobin(list, limit, used, score) {
     moved = false;
     for (const g of order) {
       if (out.length >= limit) break;
-      while (g.length && used.has(g[0].item.key)) g.shift();
-      if (g.length) { const c = g.shift(); used.add(c.item.key); out.push(c); moved = true; }
+      while (g.length && used.has(wordId(g[0].item))) g.shift();
+      if (g.length) { const c = g.shift(); used.add(wordId(c.item)); out.push(c); moved = true; }
     }
   }
   return out;
@@ -636,8 +638,8 @@ function comboLike(it) {                                        // a fresh combo
   return Combo.make('en').item;
 }
 function distractors(it, pool) {
-  const out = [], en = new Set([it.en.toLowerCase()]), dz = new Set([it.dz.toLowerCase()]);
-  const add = x => { const e = x.en.toLowerCase(), d = x.dz.toLowerCase(); if (en.has(e) || dz.has(d)) return false; en.add(e); dz.add(d); out.push(x); return true; };
+  const out = [], en = new Set([it.en.toLowerCase()]), dz = new Set([it.dz.toLowerCase()]), ids = new Set([wordId(it)]);
+  const add = x => { const e = x.en.toLowerCase(), d = x.dz.toLowerCase(), w = wordId(x); if (en.has(e) || dz.has(d) || ids.has(w)) return false; en.add(e); dz.add(d); ids.add(w); out.push(x); return true; };
   if (it.combo) { for (let i = 0; i < 40 && out.length < 7; i++) add(comboLike(it)); }
   else if (NUM_TOPICS.includes(it.topic.id) || MONEY_TOPICS.includes(it.topic.id)) {   // similar size, so length isn't a clue
     const near = shuffle(pool.filter(x => x !== it)).sort((a, b) => Math.abs(digitsOf(a) - digitsOf(it)) - Math.abs(digitsOf(b) - digitsOf(it)));
