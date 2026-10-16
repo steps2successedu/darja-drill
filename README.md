@@ -55,7 +55,8 @@ Session options let you drill Present, Past or both. The data is in `vocab.js` (
   - *yeskoun*, *yekhdem* and *y7eb* (Deck 1, singular only).
 - **Past verbs** (Verbs in the Past Tense deck):
   - Full tables (all 8 persons): *y7awas*, *yerfed*, *yet3allam*, *yakoul*, *y9oul*, plus *ymchi* and *y9ra*.
-  - Key forms only ("I" and "he"): *ybda*, *ynsa*, *ysalli*, *ykhalli*, *y7ab*, *y7al*, *yrad*, *ydir*, *y9is*, *ychouf*, *ydjouz*.
+  - Key forms only ("I" and "he"): *ybda*, *ynsa*, *ysalli*, *ykhalli*, *y7ab*, *yrad*, *ydir*, *y9is*, *ychouf*, *ydjouz*.
+  - From the families slide: *y7al* (I, you m./f., he, she, they) and *yzid* (I, you m., he, she, we, they).
 - The pronoun accepts the slides' alternatives: *ntaya*, *ntiya*, *howa*, *hiya*.
 
 ## My routine

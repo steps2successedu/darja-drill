@@ -15,7 +15,7 @@
   next number, and paste the new items in. Nothing else needs to change.
 */
 window.VOCAB = {
-updated: '2026-10-16',
+updated: '2026-10-17',
 topics: [
 {id:'questions', name:'Questions', week:1, deck:'Deck 1', items:[
   ['Wech rak?', 'How are you? — to a man', 'وَاشْ رَاكْ؟', 'Ki rak? · Labas?'],
@@ -326,7 +326,7 @@ topics: [
 {id:'present', name:'Present verbs', week:8, deck:'The Present', items:[
   ['Yekteb', 'to write · he writes', 'يَكْتَبْ'],
   ['Yekdeb', 'to lie · he lies', 'يَكْذَبْ', '', 'u'],
-  ['Y9ra', 'to read · he reads', 'يَقْرَا'],
+  ['Y9ra', 'to read · to study · he reads', 'يَقْرَا'],
   ['Ymchi', 'to walk · he walks', 'يَمْشِي'],
   ['Ychrab', 'to drink · he drinks', 'يَشْرَبْ']
 ]},
@@ -409,15 +409,17 @@ window.VOCAB.verbs = [
   {id:'p-t3allam', name:'Yet3allam', en:'to learn', deck:'Verbs in the Past Tense', pastEn:'learnt', past:{ana:'T3allamt', nta:'T3allamt', nti:'T3allamti', houwa:'T3allam', hia:'T3allamat', '7na':'T3allamna', ntouma:'T3allamtou', houma:'T3allamou'}},
   {id:'p-akoul', name:'Yakoul', en:'to eat', deck:'Verbs in the Past Tense', pastEn:'ate', past:{ana:'Klit', nta:'Klit', nti:'Kliti', houwa:'Kla', hia:'Klat', '7na':'Klina', ntouma:'Klitou', houma:'Klaou'}},
   {id:'p-9oul', name:'Y9oul', en:'to say', deck:'Verbs in the Past Tense', pastEn:'said', past:{ana:'9oult', nta:'9oult', nti:'9oulti', houwa:'9al', hia:'9alat', '7na':'9oulna', ntouma:'9oultou', houma:'9alou'}},
-  // key forms: the slides give only "I" and "he" for these
+  // key forms: the slides give only "I" and "he" for most of these (plus the families slide for y7al and yzid)
   {id:'p-bda', name:'Ybda', en:'to start', deck:'Verbs in the Past Tense', pastEn:'started', past:{ana:'Bdit', houwa:'Bda'}},
   {id:'p-nsa', name:'Ynsa', en:'to forget', deck:'Verbs in the Past Tense', pastEn:'forgot', past:{ana:'Nsit', houwa:'Nsa'}},
   {id:'p-salla', name:'Ysalli', en:'to pray', deck:'Verbs in the Past Tense', pastEn:'prayed', past:{ana:'Sallit', houwa:'Salla'}},
   {id:'p-khalla', name:'Ykhalli', en:'to let', deck:'Verbs in the Past Tense', pastEn:'let', past:{ana:'Khallit', houwa:'Khalla'}},
   {id:'p-7ab', name:'Y7ab', en:'to love · to want', deck:'Verbs in the Past Tense', pastEn:'wanted', past:{ana:'7abit', houwa:'7ab'}},
-  {id:'p-7al', name:'Y7al', en:'to open · to solve', deck:'Verbs in the Past Tense', pastEn:'opened', past:{ana:'7alit', houwa:'7al'}},
+  {id:'p-7al', name:'Y7al', en:'to open · to solve', deck:'Verbs in the Past Tense', pastEn:'opened', past:{ana:'7alit', nta:'7alit', nti:'7aliti', houwa:'7al', hia:'7alat', houma:'7alou'}},
   {id:'p-rad', name:'Yrad', en:'to reply · to return', deck:'Verbs in the Past Tense', pastEn:'replied', past:{ana:'Radit', houwa:'Rad'}},
   {id:'p-dar', name:'Ydir', en:'to do', deck:'Verbs in the Past Tense', pastEn:'did', past:{ana:'Dert', houwa:'Dar'}},
+  // from the families slide: zedt, zedna … zad, zadat, zadou
+  {id:'p-zid', name:'Yzid', en:'to add', deck:'Verbs in the Past Tense', pastEn:'added', past:{ana:'Zedt', nta:'Zedt', houwa:'Zad', hia:'Zadat', '7na':'Zedna', houma:'Zadou'}},
   {id:'p-9as', name:'Y9is', en:'to touch', deck:'Verbs in the Past Tense', pastEn:'touched', past:{ana:'9est', houwa:'9as'}},
   {id:'p-chaf', name:'Ychouf', en:'to see', deck:'Verbs in the Past Tense', pastEn:'saw', past:{ana:'Chouft', houwa:'Chaf'}},
   {id:'p-djaz', name:'Ydjouz', en:'to pass', deck:'Verbs in the Past Tense', pastEn:'passed', past:{ana:'Djouzt', houwa:'Djaz'}}
